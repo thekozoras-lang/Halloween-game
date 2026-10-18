@@ -8,16 +8,18 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:radial-gradient(circle at 50% -10%,#3b1763,var(--bg) 60%);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
 #app{max-width:560px;margin:0 auto;padding:14px}
-h1{font-size:1.5rem;margin:4px 0;text-align:center;color:var(--or)}
-h2{font-size:1.1rem;margin:0 0 8px}
-.sub{text-align:center;color:var(--mut);margin-bottom:10px;font-size:.9rem}
+h1{font-size:1.45rem;margin:4px 0;text-align:center;color:var(--or)}
+h2{font-size:1.08rem;margin:0 0 8px}
 .card{background:var(--card);border-radius:16px;padding:14px;margin:12px 0;border:1px solid #3d2563}
 .banner{background:linear-gradient(90deg,#ff8a1f,#ff4d6d);color:#1a0a00;font-weight:800;text-align:center;border-radius:14px;padding:10px}
+.ready{background:linear-gradient(90deg,#4be36a,#b6f23a);color:#06240c;font-weight:900;text-align:center;border-radius:14px;padding:14px;font-size:1.2rem}
 button,select,input,textarea{font:inherit;border-radius:12px;border:1px solid #4d2f78;background:var(--card2);color:var(--tx);padding:10px 12px}
 button{background:var(--or);color:#1a0a00;font-weight:700;border:0;cursor:pointer}
 button.alt{background:var(--card2);color:var(--tx);border:1px solid #4d2f78}
-button.big{width:100%;padding:16px;font-size:1.1rem;margin-top:8px}
+button.red{background:var(--rd);color:#fff}
+button.big{width:100%;padding:15px;font-size:1.05rem;margin-top:8px}
 button.sm{padding:5px 9px;font-size:.8rem;border-radius:9px}
+button:disabled{opacity:.4}
 textarea,input[type=text],input:not([type]){width:100%;margin:4px 0}
 .row{display:flex;align-items:center;gap:8px;justify-content:space-between;padding:6px 0;border-bottom:1px solid #3a2360}
 .row:last-child{border:0}
@@ -25,57 +27,26 @@ textarea,input[type=text],input:not([type]){width:100%;margin:4px 0}
 .gap{display:flex;gap:6px;flex-wrap:wrap}
 .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .cards button{aspect-ratio:3/4;font-size:2rem;background:var(--card2);color:var(--or);border:2px dashed var(--or)}
-.pad{height:150px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;text-align:center;width:100%;padding:8px}
+.pad{height:140px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;text-align:center;width:100%;padding:8px;background:var(--card2)}
 .wait{background:#3a1d1d;color:#ffb3b3}.go{background:var(--gr);color:#0a2a00}
 .mut{color:var(--mut);font-size:.85rem}
 .crown{text-align:center;font-size:3rem}
 .tag{font-size:.7rem;background:#4d2f78;border-radius:8px;padding:2px 6px;margin-left:4px}
 .vs{display:flex;gap:10px;text-align:center}.vs div{flex:1;background:var(--card2);border-radius:14px;padding:12px}.vs b{display:block;font-size:2rem;color:var(--or)}
 .curse{border:2px solid var(--rd);border-radius:14px;padding:10px;margin:8px 0;background:#3a1020}
-</style></head><body><div id="app"><div class="sub">Summoning the spirits…</div></div>
+.pick{background:var(--card2);border:2px solid #4d2f78;border-radius:14px;padding:10px;margin:8px 0;cursor:pointer}
+.pick.on{border-color:var(--or);background:#4a2a14}
+.gc{background:var(--card2);border-radius:14px;padding:10px;margin:8px 0}
+.live{display:inline-block;background:var(--rd);color:#fff;border-radius:8px;padding:1px 7px;font-size:.7rem;font-weight:800}
+</style></head><body><div id="app"><div class="mut" style="text-align:center">Summoning the spirits…</div></div>
 <script>
-const KIDCH=[
-["🧟 Zombie Walk","Walk like a zombie across the room and back without laughing!"],
-["🧻 Mummy Wrap","Wrap a partner in toilet paper head to toe — fastest wrap wins!"],
-["🎃 Pumpkin Toss","Toss 3 bean bags into the pumpkin bucket. Points for each one in!"],
-["🕺 Freeze Dance","Dance to the spooky music. Freeze when it stops — wobblers are out!"],
-["👻 Ghost Hunt","Find 3 hidden ghosts (or 3 orange things) before time runs out!"],
-["🧙 Witch’s Potion","Scoop ‘eyeballs’ (grapes) with a spoon and carry them to a bowl!"],
-["🕸️ Spider Web Crawl","Crawl under the string ‘web’ without touching it!"],
-["🍬 Candy Corn Spoon Race","Carry candy corn on a spoon across the room without dropping it!"],
-["🧹 Broomstick Race","Ride a broomstick around the cone and back — fastest rider wins!"],
-["🎭 Monster Faces","Make your scariest monster face and hold it for 5 seconds without laughing!"]];
-const ADG={cards:'🃏 Trick-or-Treat Cards',gamble:'🎲 Grave Gamble',potion:'🧪 Potion Roulette'};
-const FING={duel:'⚡ Ghost Reaction',simon:'🧠 Spooky Memory',charades:'🎭 Describe the Spook'};
-const ORD={kidSel:KIDCH.map((_,i)=>i),adSel:Object.keys(ADG),finSel:Object.keys(FING)};
-const CARDS=[
-["🍬 Sweet Treat! +6",6],["🍬 Sweet Treat! +6",6],["🎃 Golden Pumpkin! +10",10],["🦇 Bat Blessing +4",4],["🦇 Bat Blessing +4",4],
-["🕷️ TRICK: Cackle like a witch for 5 seconds! +7",7],["🧟 TRICK: Zombie-walk to the snack table and back! +7",7],
-["👻 TRICK: Say ‘Boo!’ to 3 people! +6",6],["💀 TRICK: Tell the room your scariest fear +5",5],
-["⚰️ CURSE! The coffin takes 3 points −3",-3],["⚰️ CURSE! −3",-3],["🔮 STEAL! Take 3 points from the adult leader",0,"steal"],["🪄 Double Spell! +12",12]];
-const POTIONS=[["🧪 Green Slime +8",8],["🧪 Purple Mist +5",5],["🧪 Orange Fizz +6",6],["🧪 Black Goo −2 (and cackle!)",-2],["🧪 Red Blood: STEAL 3 from the leader",0,"steal"],["🧪 Glow Juice +10",10]];
-const TWISTS=["🤐 No talking — act it out","🙈 Eyes closed","🐸 Hop on one foot","🤫 Whisper only","🙌 Hands behind your back","🧟 Zombie voice only","🔄 Opposite hand only","🎵 Hum or sing your clues"];
-const WORDS=["🧟 Zombie","🧙 Witch on a broom","🎃 Carving a pumpkin","🦇 Bat","👻 Ghost","🕷️ Spider","🧛 Vampire","🍬 Trick-or-treating","🪦 Rising from a grave","🐺 Werewolf","🧹 Sweeping with a broom","🕸️ Spider web"];
-const SYM=['🎃','🦇','👻','🕷️'];
-let db=null,S=null,P=[],me=localStorage.getItem('hh_me')||null,host=localStorage.getItem('hh_host')==='1',pad={},sim={},wd={},pw={},step=null,dirty=false,err='';
-const $=s=>document.querySelector(s);
-const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const by=id=>P.find(p=>p.id===id);
-const kids=()=>P.filter(p=>p.group==='kid'),adults=()=>P.filter(p=>p.group==='adult');
-const num=v=>typeof v==='number'?v:0;
-const kidSel=()=>S.kidSel||ORD.kidSel.slice(0,6),adSel=()=>S.adSel||ORD.adSel,finSel=()=>S.finSel||ORD.finSel;
-const typing=a=>a&&a.closest&&a.closest('#app')&&(/TEXTAREA|SELECT/.test(a.tagName)||(a.tagName==='INPUT'&&a.type!=='checkbox'));
-function carry(p){const g=P.filter(x=>x.group===p.group),f=p.group==='kid'?'kidPts':'adPts',m=Math.max(0,...g.map(x=>num(x[f])));return m>0?Math.round(10*num(p[f])/m):0}
-const total=p=>carry(p)+num(p.finPts);
-const teamAvg=g=>{const m=P.filter(p=>p.group===g);return m.length?m.reduce((s,p)=>s+total(p),0)/m.length:0};
-function holders(){const o=[];[['kid','kidPts'],['adult','adPts']].forEach(([g,f])=>P.filter(p=>p.group===g).sort((a,b)=>num(b[f])-num(a[f])).slice(0,2).filter(p=>num(p[f])>0).forEach(p=>o.push(p.id)));return o}
-// ====== PASTE YOUR FIREBASE DATABASE URL BETWEEN THE QUOTES ======
+// ====== YOUR FIREBASE DATABASE URL ======
 const FIREBASE_URL='https://halloween-party-3d57a-default-rtdb.firebaseio.com';
-// ================================================================
+// ========================================
 const BASE=FIREBASE_URL.replace(/\/+$/,'');
-let cache={},subs=[];
+let cache={},subs=[],lastS='';
 const jx=(path,method,body)=>fetch(BASE+'/'+path+'.json',{method,body:body===undefined?undefined:JSON.stringify(body)}).then(r=>{if(!r.ok)throw new Error('Database error '+r.status);return r.json()});
-async function pull(){const d=await jx('','GET');cache=d||{};subs.forEach(f=>f())}
+async function pull(){const d=await jx('','GET'),s=JSON.stringify(d||{});if(s===lastS)return;lastS=s;cache=d||{};subs.forEach(f=>f())}
 const rid=()=>'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const DB={
   doc(path){const [c,id]=path.split('/');return{
@@ -85,192 +56,369 @@ const DB={
     onSnapshot(cb){const f=()=>{const o=cache[c]||{};cb({docs:Object.keys(o).map(id=>({id,data:()=>o[id]}))})};subs.push(f);f()},
     doc(id){id=id||rid();return{id,set:x=>jx(c+'/'+id,'PUT',x).then(pull)}}}}
 };
+// ---------- GAME LIBRARY ----------
+const T=[10,7,5,4,3,2,1];
+const GM={};
+const D=(type,id,name,sum,how)=>GM[id]={id,type,name,sum,how};
+D('act','zw','🧟 Zombie Walk','Slow-motion zombie race across the room.','Line up. On GO, walk like a zombie to the finish line and back. No running, no laughing! The judge ranks who finishes first with the best zombie style.');
+D('act','mw','🧻 Mummy Wrap','Wrap a partner in toilet paper.','Pair up. You have 60 seconds to wrap your partner head to toe in toilet paper without tearing it. The judge ranks the best wrappers.');
+D('act','pt','🎃 Pumpkin Toss','Toss bean bags into a pumpkin bucket.','Everyone gets 3 tosses from behind the line. Most bean bags in the bucket wins. The judge ranks by bags in.');
+D('act','fd','🕺 Freeze Dance','Dance until the music stops, then freeze!','Dance while the music plays. When it stops, freeze like a statue. Wobblers are out. Last one still frozen wins.');
+D('act','gh','👻 Ghost Hunt','Race to find hidden paper ghosts.','Hide 5 paper ghosts around the room. On GO, find as many as you can in 2 minutes. Most ghosts found wins.');
+D('act','wp','🧙 Witch’s Potion','Spoon “eyeballs” into the cauldron.','Carry grapes (“eyeballs”) on a spoon to the cauldron bowl. Most delivered in 60 seconds wins. Dropped ones don’t count.');
+D('act','sw','🕸️ Spider Web Crawl','Crawl under a yarn web without touching it.','Stretch yarn across a doorway or hallway. Crawl under without touching it. Fewest touches and fastest time wins.');
+D('act','cc','🍬 Candy Corn Spoon Race','Carry candy corn on a spoon.','Balance candy corn on a spoon and race across the room. Drop it and you restart. First across wins.');
+D('act','bs','🧹 Broomstick Race','Ride a broomstick around a cone.','Straddle a broomstick, gallop around the cone and back. Fastest rider wins.');
+D('act','mf','🎭 Monster Faces','Make the scariest face and hold it.','Make your scariest monster face and hold it for 5 seconds without laughing. The judge picks the scariest.');
+D('cards','cards','🃏 Trick-or-Treat Cards','Pick a mystery card: treats, tricks and curses!','Each round, tap one of three face-down cards. Treats give points, tricks are silly dares (do the dare for the points!), and curses cost points.');
+D('gamble','gamble','🎲 Grave Gamble','Play it safe or risk it all.','Each round choose: play safe for +4, or go risky for a 50/50 shot at +12 or −4.');
+D('potion','potion','🧪 Potion Roulette','Drink a mystery potion.','Each round, pick one of three potions. It might be great, it might be gross, it might steal points!');
+D('react','react','⚡ Ghost Reaction','Fastest finger wins.','Tap Start, wait for the ghost to appear, then tap as fast as you can. Tapping early is a false start. Fastest gets the most points.');
+D('mem','mem','🧠 Spooky Memory','Repeat the spooky pattern.','Watch the symbols flash, then tap them in the same order. The pattern grows each level. The highest level wins.');
+D('desc','desc','🎭 Describe the Spook','Describe your secret word without saying it!','The actor sees a secret word on their phone and describes it to their team without saying it. The team guesses. The host marks if they got it: +5 points.');
+const KID_G=['zw','mw','pt','fd','gh','wp','sw','cc','bs','mf'],ADU_G=['cards','gamble','potion','react','mem'],FIN=['react','mem','desc'];
+const GL={kid:'Kids',adult:'Adults'},GI={kid:'🧟',adult:'🧛'},GAMES={kid:KID_G,adult:ADU_G};
+const CARDS=[["🍬 Sweet Treat! +6",6],["🍬 Sweet Treat! +6",6],["🎃 Golden Pumpkin! +10",10],["🦇 Bat Blessing +4",4],["🦇 Bat Blessing +4",4],["🕷️ TRICK: Cackle like a witch for 5 seconds! +7",7],["🧟 TRICK: Zombie-walk to the snack table and back! +7",7],["👻 TRICK: Say ‘Boo!’ to 3 people! +6",6],["💀 TRICK: Tell the room your scariest fear +5",5],["⚰️ CURSE! The coffin takes 3 points −3",-3],["⚰️ CURSE! −3",-3],["🔮 STEAL! Take 3 points from the adult leader",3,"steal"],["🪄 Double Spell! +12",12]];
+const POTIONS=[["🧪 Green Slime +8",8],["🧪 Purple Mist +5",5],["🧪 Orange Fizz +6",6],["🧪 Black Goo −2 (and cackle!)",-2],["🧪 Red Blood: STEAL 3 from the leader",3,"steal"],["🧪 Glow Juice +10",10]];
+const TWISTS=["🤐 No talking — act it out","🙈 Eyes closed","🐸 Hop on one foot","🤫 Whisper only","🙌 Hands behind your back","🧟 Zombie voice only","🔄 Opposite hand only","🎵 Hum or sing your clues"];
+const WORDS=["🧟 Zombie","🧙 Witch on a broom","🎃 Carving a pumpkin","🦇 Bat","👻 Ghost","🕷️ Spider","🧛 Vampire","🍬 Trick-or-treating","🪦 Rising from a grave","🐺 Werewolf","🧹 Sweeping with a broom","🕸️ Spider web"];
+const SYM=['🎃','🦇','👻','🕷️'];
+// ---------- STATE ----------
+let db=null,S=null,P=[],R={},RD={},SC={g:{},f:{}},me=localStorage.getItem('hh_me')||null,step=null,picks={},pad={},sim={},wd={},pws={},hostUntil=0,dirty=false,err='',sent=new Set();
+const $=s=>document.querySelector(s);
+const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const by=id=>P.find(p=>p.id===id);
+const members=g=>P.filter(p=>p.group===g);
+const num=v=>typeof v==='number'?v:0;
+const fg=()=>[...FIN,...Array(num(S&&S.sd)).fill('react')];
+const typing=a=>a&&a.closest&&a.closest('#app')&&(/TEXTAREA|SELECT/.test(a.tagName)||(a.tagName==='INPUT'&&a.type!=='checkbox'));
+const ok=()=>Date.now()<hostUntil;
+const mine=()=>me&&by(me)?[by(me),...P.filter(p=>p.helper===me)]:[];
+const cnt=()=>({k:members('kid').length,a:members('adult').length});
+const canGo=()=>{const c=cnt();return c.k>=2&&c.a>=2};
+const upd=o=>DB.doc('game/state').update(o);
+const tstat=t=>{const tk=S['tk'+t]||{st:'idle'};return tk.st==='live'&&RD[`${t}_${tk.gi}_${tk.rd}`]==='done'?'scored':tk.st};
+const fstat=()=>S.fst==='live'&&RD[`f_${S.fi}_1`]==='done'?'scored':S.fst;
+// ---------- SCORING (derived, so it can never double-count) ----------
+function roundPts(key,gid,mem){
+  const out={};if(RD[key]!=='done'||!GM[gid])return out;
+  const g=GM[gid],ent=R[key]||{};
+  if(['react','mem','act'].includes(g.type)){
+    let a=mem.filter(p=>ent[p.id]).map(p=>({id:p.id,v:ent[p.id].v}));
+    if(g.type==='react')a=a.filter(x=>x.v<9999).sort((x,y)=>x.v-y.v);
+    else if(g.type==='mem')a=a.filter(x=>x.v>0).sort((x,y)=>y.v-x.v);
+    else a.sort((x,y)=>x.v-y.v);
+    let last=null,ri=0;a.forEach((x,i)=>{if(x.v!==last){ri=i;last=x.v}out[x.id]=T[ri]||1});
+  }else mem.forEach(p=>{if(ent[p.id])out[p.id]=ent[p.id].v});
+  return out;
+}
+function computeScores(){
+  SC={g:{},f:{}};P.forEach(p=>{SC.g[p.id]=0;SC.f[p.id]=0});if(!S)return;
+  ['kid','adult'].forEach(g=>{const sel=S['sel_'+g]||[],t=g==='kid'?'k':'a',mem=members(g);
+    for(let gi=0;gi<sel.length;gi++)for(let rd=1;rd<=3;rd++){const o=roundPts(`${t}_${gi}_${rd}`,sel[gi],mem);for(const id in o)SC.g[id]+=o[id]}});
+  fg().forEach((gid,fi)=>{const o=roundPts(`f_${fi}_1`,gid,P);for(const id in o)SC.f[id]+=o[id]});
+}
+const gpts=p=>Math.max(0,(SC.g[p.id]||0)+num(p.adj));
+const fpts=p=>SC.f[p.id]||0;
+function carry(p){const m=Math.max(0,...members(p.group).map(gpts));return m>0?Math.round(10*gpts(p)/m):0}
+const total=p=>carry(p)+fpts(p);
+const teamAvg=g=>{const m=members(g);return m.length?m.reduce((s,p)=>s+total(p),0)/m.length:0};
+function calcPower(){const hold=[],tie=[];
+  ['kid','adult'].forEach(g=>{const r=members(g).sort((a,b)=>gpts(b)-gpts(a)||num(b.coin)-num(a.coin));
+    const cut=r[2]&&r[1]&&gpts(r[1])===gpts(r[2]);
+    r.slice(0,2).forEach(p=>{if(gpts(p)>0){hold.push(p.id);if(cut&&gpts(p)===gpts(r[1]))tie.push(p.id)}})});
+  return{hold,tie}}
+// ---------- AUTO ROUND COMPLETION ----------
+function activeRounds(){const o=[];if(!S)return o;
+  if(S.phase==='live')['k','a'].forEach(t=>{const tk=S['tk'+t];if(tk&&tk.st==='live'){const g=t==='k'?'kid':'adult';o.push({key:`${t}_${tk.gi}_${tk.rd}`,gid:(S['sel_'+g]||[])[tk.gi],mem:members(g)})}});
+  if(S.phase==='final'&&S.fst==='live')o.push({key:`f_${S.fi}_1`,gid:fg()[S.fi],mem:P});
+  return o}
+function autoDone(){activeRounds().forEach(r=>{const ty=GM[r.gid]&&GM[r.gid].type;if(!['react','mem','cards','gamble','potion'].includes(ty))return;
+  if(RD[r.key]==='live'&&r.mem.length&&r.mem.every(p=>(R[r.key]||{})[p.id])&&!sent.has(r.key)){sent.add(r.key);DB.doc('rds/'+r.key).set({st:'done'}).catch(()=>sent.delete(r.key))}})}
+function refresh(){if(!db)return;autoDone();render()}
 async function init(){
-  if(!FIREBASE_URL||FIREBASE_URL.includes('PASTE_YOUR')){$('#app').innerHTML='<div class="card"><h2>👻 Almost ready</h2><p class="mut">The database address hasn’t been added yet. Follow step 6 of the setup instructions to paste your Firebase database URL into this file.</p></div>';return}
   try{await pull()}catch(e){$('#app').innerHTML='<div class="card"><h2>👻 Can’t reach the database</h2><p class="mut">Check the Firebase URL in the file and that the database rules allow read and write. ('+E(e.message)+')</p></div>';return}
   db=DB;
-  db.doc('game/state').onSnapshot(s=>{S=s.exists?s.data():null;render()});
-  db.collection('players').onSnapshot(q=>{P=q.docs.map(d=>({id:d.id,...d.data()}));render()});
+  db.doc('game/state').onSnapshot(s=>{S=s.exists?s.data():null;refresh()});
+  db.collection('players').onSnapshot(q=>{P=q.docs.map(d=>({id:d.id,...d.data()}));refresh()});
+  db.collection('res').onSnapshot(q=>{R={};q.docs.forEach(d=>{const x=d.data();(R[x.key]=R[x.key]||{})[x.pid]=x});refresh()});
+  db.collection('rds').onSnapshot(q=>{RD={};q.docs.forEach(d=>RD[d.id]=d.data().st);refresh()});
   let t=null;const kick=()=>{clearTimeout(t);t=setTimeout(()=>pull().catch(()=>{}),120)};
   try{const es=new EventSource(BASE+'/.json');es.addEventListener('put',kick);es.addEventListener('patch',kick)}catch(e){}
   setInterval(()=>pull().catch(()=>{}),3000);
+  setInterval(()=>{if(hostUntil&&!ok()){hostUntil=0;render()}},5000);
 }
+// ---------- HOST LOCK ----------
+function guard(){if(!ok()){alert('🔒 Host controls are locked. Tap “Unlock” and enter the passcode.');return false}hostUntil=Date.now()+180000;return true}
+function unlock(){const p=prompt('Host passcode?');if(p===null)return;if(S&&p.trim()===String(S.pin)){hostUntil=Date.now()+180000;render()}else alert('Wrong passcode')}
+function lock(){hostUntil=0;render()}
+// ---------- RENDER ----------
 function render(){
   if(typing(document.activeElement)){dirty=true;return}
-  dirty=false;
-  const app=$('#app');let h='<h1>🎃 Haunted House Showdown 🦇</h1>';
+  dirty=false;computeScores();
+  let h='<h1>🎃 Haunted House Showdown 🦇</h1>';
   if(err)h+=`<div class="card mut">⚠️ ${E(err)}</div>`;
-  if(!S){app.innerHTML=h+setup();return}
-  h+=`<div class="banner">${{lobby:'👻 Gathering the ghouls…',kids:'🧟 KIDS MONSTER MISSIONS',adults:'🧛 PARENTS TRICK OR TREAT',final:'💀 FINAL: KIDS vs PARENTS',done:'🏆 WE HAVE CHAMPIONS!'}[S.phase]}</div>`;
-  if(S.phase==='done')h+=winner();
-  if(S.phase==='final'||S.phase==='done')h+=teamBoard();
-  h+=boards();
-  h+=(!me||!by(me))?picker():playerPanel();
-  h+=host?hostPanel():`<div class="card"><button class="alt sm" onclick="hostLogin()">🔑 Host login</button></div>`;
-  app.innerHTML=h;
+  if(!S){$('#app').innerHTML=h+createUI();return}
+  const ph=S.phase;
+  h+=ph==='ready'?'<div class="ready">✅ READY TO START</div>':`<div class="banner">${{reg:'📝 REGISTRATION IS OPEN',setup:'🛠️ GAME SETUP',live:'🎮 GAMES IN PROGRESS',final:'💀 FINAL: KIDS vs ADULTS',done:'🏆 WE HAVE CHAMPIONS!'}[ph]}</div>`;
+  if(ph==='reg')h+=regUI();
+  else if(ph==='setup')h+=setupUI();
+  else if(ph==='ready')h+=summary()+(me&&by(me)?'':joinAgain());
+  else if(ph==='live')h+=liveStrip()+playUI()+boards();
+  else if(ph==='final')h+=teamBoard()+finalUI()+boards();
+  else h+=winner()+teamBoard()+boards();
+  h+=hostPanel();
+  $('#app').innerHTML=h;
 }
 document.addEventListener('focusout',()=>{setTimeout(()=>{if(dirty&&!typing(document.activeElement))render()},50)});
-function setup(){return `<div class="card"><h2>Start tonight’s game</h2><p class="mut">One name per line. You can add or remove players later, and pick the games next.</p>
-<b>Kids</b><textarea id="sk" rows="4" placeholder="Mia&#10;Leo&#10;Ava"></textarea>
-<b>Parents / adults</b><textarea id="sa" rows="4" placeholder="Sam&#10;Jess"></textarea>
-<b>Host PIN</b><input id="sp" inputmode="numeric" maxlength="6" placeholder="4-digit PIN to run the game">
-<button class="big" onclick="createGame()">Create game 👻</button></div>`}
-async function createGame(){
-  const L=id=>$(id).value.split('\n').map(s=>s.trim()).filter(Boolean),pin=$('#sp').value.trim();
-  if(!pin){alert('Pick a host PIN');return}
-  try{
-  await db.doc('game/state').set({phase:'lobby',pin,kc:0,ar:1,fr:1,kidSel:ORD.kidSel.slice(0,6),adSel:ORD.adSel,finSel:ORD.finSel});
-  for(const [g,id] of [['kid','#sk'],['adult','#sa']])for(const n of L(id))await db.collection('players').doc().set({name:n,group:g,helper:null,kidPts:0,adPts:0,finPts:0,picks:[]});
-  host=true;localStorage.setItem('hh_host','1');
-  }catch(e){alert('Could not save: '+(e.message||e.code))}
-}
-function hostLogin(){const p=prompt('Host PIN?');if(p&&S&&p===S.pin){host=true;localStorage.setItem('hh_host','1');render()}else if(p)alert('Wrong PIN')}
-function boards(){
-  const pws=(S.phase==='final'||S.phase==='done')?(S.pw||[]):holders();
-  const row=(p,v,f)=>`<div class="row"><span>${E(p.name)}${pws.includes(p.id)?'<span class="tag">⚡ power</span>':''}${p.helper&&by(p.helper)?`<span class="tag">📱 ${E(by(p.helper).name)}</span>`:''}</span><span class="gap"><span class="pts">${v}</span>${host&&f?`<button class="sm alt" onclick="adj('${p.id}','${f}',-1)">−</button><button class="sm alt" onclick="adj('${p.id}','${f}',1)">+</button>`:''}</span></div>`;
-  let h='';
-  if(S.phase==='final'||S.phase==='done')h+=`<div class="card"><h2>🏆 Everyone</h2><div class="mut">Prelim Power (0–10) + final points</div>`+[...P].sort((a,b)=>total(b)-total(a)).map(p=>row(p,total(p),'finPts')).join('')+'</div>';
-  h+=`<div class="card"><h2>🧟 Kids <span class="mut">(top 2 earn a ⚡ final power)</span></h2>`+([...kids()].sort((a,b)=>num(b.kidPts)-num(a.kidPts)).map(p=>row(p,num(p.kidPts),S.phase==='kids'?'kidPts':'')).join('')||'<span class="mut">No kids yet</span>')+'</div>';
-  h+=`<div class="card"><h2>🧛 Parents <span class="mut">(top 2 earn a ⚡ final power)</span></h2>`+([...adults()].sort((a,b)=>num(b.adPts)-num(a.adPts)).map(p=>row(p,num(p.adPts),S.phase==='adults'?'adPts':'')).join('')||'<span class="mut">No adults yet</span>')+'</div>';
+// ---------- CREATE / REGISTER ----------
+function createUI(){return `<div class="card"><h2>Open a new game</h2><p class="mut">Only the host does this. Pick a passcode you’ll remember. You’ll need it for every host control.</p><input id="cp" inputmode="numeric" maxlength="8" placeholder="Host passcode (4+ digits)"><button class="big" onclick="createGame()">Open registration 📝</button></div>`}
+async function createGame(){const pin=$('#cp').value.trim();if(pin.length<4){alert('Use at least 4 digits');return}
+  try{await DB.doc('game/state').set({phase:'reg',pin});hostUntil=Date.now()+180000}catch(e){alert('Could not save: '+(e.message||e))}}
+function regUI(){
+  const c=cnt(),m=me&&by(me);
+  if(m&&step)return helpUI();
+  let h=`<div class="card"><h2>Who’s playing?</h2><div class="vs"><div>🧟 Kids<b>${c.k}</b></div><div>🧛 Adults<b>${c.a}</b></div></div><p class="mut">Need at least 2 kids and 2 adults to start.</p></div>`;
+  if(m){h+=`<div class="card"><h2>You’re in, ${E(m.name)}! ✅</h2><p class="mut">Waiting for the host to close registration.</p><div class="gap"><button class="alt" onclick="step='help';render()">+ Add someone without a phone</button><button class="alt" onclick="setMe('')">Not me</button></div></div>`}
+  else h+=newForm('rn','rg','register()','Join the game')+existing();
   return h;
 }
-function teamBoard(){return `<div class="card"><h2>⚔️ Team score</h2><div class="vs"><div>🧟 Kids<b>${teamAvg('kid').toFixed(1)}</b></div><div>🧛 Parents<b>${teamAvg('adult').toFixed(1)}</b></div></div><div class="mut" style="margin-top:6px">Average per player, so any team size is fair!</div></div>`}
-async function adj(id,f,d){const p=by(id);await db.doc('players/'+id).update({[f]:Math.max(0,num(p[f])+d)})}
-function picker(){return `<div class="card"><h2>Who are you?</h2><p class="mut">Tap your name to play on this phone.</p><div class="gap">`+P.map(p=>`<button class="alt" onclick="setMe('${p.id}')">${p.group==='kid'?'🧟':'🧛'} ${E(p.name)}</button>`).join('')+'</div></div>'}
-function setMe(id){me=id||null;if(id){localStorage.setItem('hh_me',id);step='mode'}else{localStorage.removeItem('hh_me');step=null}render()}
-async function toggleHelp(id){const p=by(id);await db.doc('players/'+id).update({helper:p.helper===me?null:me})}
-const mine=()=>[by(me),...P.filter(p=>p.helper===me)];
+function newForm(a,b,fn,btn){return `<div class="card"><h2>${btn}</h2><input id="${a}" placeholder="Name"><select id="${b}"><option value="kid">I’m a kid 🧟</option><option value="adult">I’m an adult 🧛</option></select><button class="big" onclick="${fn}">${btn} 🎃</button></div>`}
+function existing(){return P.length?`<div class="card"><h2>Already registered?</h2><p class="mut">Tap your name to use this phone.</p><div class="gap">`+P.map(p=>`<button class="alt" onclick="setMe('${p.id}')">${GI[p.group]} ${E(p.name)}</button>`).join('')+'</div></div>':''}
+function joinAgain(){return me&&by(me)?'':existing()}
+async function mk(name,group,helper){const r=DB.collection('players').doc();await r.set({name,group,helper:helper||null,coin:Math.random(),adj:0});return r.id}
+async function register(){const n=$('#rn').value.trim();if(!n)return;const id=await mk(n,$('#rg').value,null);setMe(id)}
+function setMe(id){me=id||null;if(id){localStorage.setItem('hh_me',id);step=regOpen()?'mode':null}else{localStorage.removeItem('hh_me');step=null}render()}
+const regOpen=()=>S&&S.phase==='reg';
+async function toggleHelp(id){const p=by(id);await DB.doc('players/'+id).update({helper:p.helper===me?null:me})}
+async function addOther(){const n=$('#hn').value.trim();if(!n)return;await mk(n,$('#hg').value,me)}
 function helpUI(){
   const m=by(me);
   if(step==='mode')return `<div class="card"><h2>Hi ${E(m.name)}! 👋</h2><p>Who is playing on this phone?</p><button class="big" onclick="step=null;render()">Just me</button><button class="big alt" onclick="step='help';render()">Me + someone without a phone</button></div>`;
-  return `<div class="card"><h2>Who are you also playing for?</h2><p class="mut">Tap everyone who doesn’t have a phone. You’ll enter for them too.</p><div class="gap">`+P.filter(p=>p.id!==me).map(p=>{const mineH=p.helper===me,other=p.helper&&!mineH;return `<button class="${mineH?'':'alt'}" ${other?'disabled':''} onclick="toggleHelp('${p.id}')">${mineH?'✅ ':''}${E(p.name)}${other?' (covered)':''}</button>`}).join('')+`</div><button class="big" onclick="step=null;render()">Done 👍</button></div>`;
+  return `<div class="card"><h2>Also playing for…</h2><p class="mut">Tap anyone already registered who has no phone, or add them below.</p><div class="gap">`+P.filter(p=>p.id!==me).map(p=>{const mh=p.helper===me,o=p.helper&&!mh;return `<button class="${mh?'':'alt'}" ${o?'disabled':''} onclick="toggleHelp('${p.id}')">${mh?'✅ ':''}${E(p.name)}${o?' (covered)':''}</button>`}).join('')+`</div></div>`+newForm('hn','hg','addOther()','Add a new person')+`<button class="big" onclick="step=null;render()">Done 👍</button>`;
 }
-function playerPanel(){
-  if(step)return helpUI();
-  const m=by(me);let h=`<div class="card"><h2>Hi ${E(m.name)}! <button class="sm alt" onclick="setMe('')">switch</button> <button class="sm alt" onclick="step='help';render()">+ play for someone</button></h2>`;
-  const ph=S.phase;
-  if(ph==='lobby')h+='<p>Waiting for the host to unleash the fun…</p>';
-  else if(ph==='kids'){
-    const c=KIDCH[kidSel()[S.kc]];h+=c?`<p><b>Challenge ${S.kc+1}: ${E(c[0])}</b><br>${E(c[1])}</p>`:'<p>Waiting…</p>';
-    const ks=mine().filter(p=>p.group==='kid');
-    if(!ks.length)h+='<p class="mut">Cheer on the kids and help judge!</p>';
-    ks.forEach(p=>{const d=p.claim===S.kc;h+=`<button class="big ${d?'alt':''}" onclick="claim('${p.id}')">${d?'✅ '+E(p.name)+' finished! Waiting for the judge':'I did it! — '+E(p.name)}</button>`});
-  }else if(ph==='adults'){
-    const as=mine().filter(p=>p.group==='adult'),g=adSel()[S.ar-1];
-    h+=`<p><b>${E(ADG[g]||'')}</b> <span class="mut">Round ${S.ar} of ${adSel().length}</span></p>`;
-    as.forEach(p=>{const mp=(p.picks||[]).find(x=>x.r===S.ar);h+=`<div style="margin:10px 0"><b>${E(p.name)}</b>`;
-      if(mp)h+=`<div class="card" style="background:var(--card2)">${E(mp.txt)}</div>`;
-      else if(g==='gamble')h+=`<button class="big alt" onclick="gamble('${p.id}',0)">🛡️ Play safe: +4</button><button class="big" onclick="gamble('${p.id}',1)">💀 Go risky: 50% +12 / 50% −4</button>`;
-      else h+=`<div class="cards">${[0,1,2].map(()=>`<button onclick="draw('${p.id}','${g}')">${g==='potion'?'🧪':'🂠'}</button>`).join('')}</div><div class="mut">Pick one…</div>`;
-      h+='</div>'});
-    if(!as.length)h+='<p class="mut">Parents are tricking tonight. Kids: grab candy!</p>';
-  }else if(ph==='final'){
-    const g=finSel()[S.fr-1],ins={duel:'Wait for the ghost, then tap FAST. Tap early = false start!',simon:'Watch the spooky pattern, then repeat it. Go as far as you can!',charades:'The actor describes their secret word WITHOUT saying it. Teammates guess!'}[g];
-    h+=`<p><b>${E(FING[g]||'')}</b> <span class="mut">Round ${S.fr} of ${finSel().length}</span><br><span class="mut">${ins||''}</span></p>`;
-    mine().forEach(p=>{h+=`<div style="margin:10px 0"><b>${E(p.name)}</b><span class="tag">${p.group==='kid'?'Kids':'Parents'}</span>`+curseHtml(p)+(g==='duel'?padHtml(p):g==='simon'?simHtml(p):charHtml(p))+powerHtml(p)+'</div>'});
-  }else h+='<p>Thanks for playing! Happy Halloween 🎃</p>';
-  return h+'</div>';
+// ---------- SETUP ----------
+function leadersHtml(){return ['kid','adult'].map(g=>{const l=S.leaders&&by(S.leaders[g]),done=(S['sel_'+g]||[]).length===3;return `<div class="row"><span>👑 ${GL[g]} leader: <b>${E(l?l.name:'?')}</b></span><span>${done?'✅ picked':'⏳ picking'}</span></div>`}).join('')}
+function pickUI(g){
+  const sel=picks[g]||(picks[g]=[...(S['sel_'+g]||[])]);
+  return `<div class="card" style="border-color:var(--or)"><h2>👑 You’re the ${GL[g]} leader!</h2><p>Pick <b>3 games</b> for the ${GL[g].toLowerCase()}. Each game is played for 3 rounds.</p>`+GAMES[g].map(id=>{const x=GM[id];return `<div class="pick ${sel.includes(id)?'on':''}" onclick="togglePick('${g}','${id}')"><b>${sel.includes(id)?'✅ ':''}${E(x.name)}</b><br><span>${E(x.sum)}</span><br><span class="mut">${E(x.how)}</span></div>`}).join('')+`<button class="big" ${sel.length===3?'':'disabled'} onclick="submitPick('${g}')">Lock in my 3 games (${sel.length}/3)</button></div>`;
 }
-async function claim(id){await db.doc('players/'+id).update({claim:S.kc})}
-async function resolve(id,txt,pts){const p=by(id),pk=p.picks||[];if(pk.find(x=>x.r===S.ar))return;await db.doc('players/'+id).update({adPts:Math.max(0,num(p.adPts)+pts),picks:[...pk,{r:S.ar,txt,pts}]})}
-async function draw(id,kind){
-  const pool=kind==='potion'?POTIONS:CARDS,c=pool[Math.floor(Math.random()*pool.length)];let pts=c[1],txt=c[0];
-  if(c[2]==='steal'){const o=adults().filter(x=>x.id!==id).sort((a,b)=>num(b.adPts)-num(a.adPts))[0];pts=3;
-    if(o&&num(o.adPts)>0){txt+=` — stole from ${o.name}!`;await db.doc('players/'+o.id).update({adPts:Math.max(0,num(o.adPts)-3)})}else txt+=' (nobody to rob, +3 anyway)'}
-  await resolve(id,txt,pts);
+function togglePick(g,id){const s=picks[g]||(picks[g]=[...(S['sel_'+g]||[])]),i=s.indexOf(id);if(i>=0)s.splice(i,1);else if(s.length<3)s.push(id);render()}
+async function submitPick(g){const s=picks[g];if(!s||s.length!==3)return;await upd({['sel_'+g]:s,editing:null});picks[g]=null}
+function needPick(g){return (S['sel_'+g]||[]).length!==3||(S.edit&&S.editing===g)}
+function leaderPicks(){let h='';['kid','adult'].forEach(g=>{if(needPick(g)&&S.leaders&&mine().some(p=>p.id===S.leaders[g]))h+=pickUI(g)});return h}
+function sec(t,body,edit){return `<div class="card"><h2>${t} ${edit&&ok()&&S.phase==='setup'&&S.edit?`<button class="sm alt" onclick="${edit}">✏️ Edit</button>`:''}</h2>${body}</div>`}
+function summary(){
+  const ps=g=>members(g).map(p=>E(p.name)+(S.leaders&&S.leaders[g]===p.id?' 👑':'')+(p.helper&&by(p.helper)?` <span class="tag">📱 ${E(by(p.helper).name)}</span>`:'')).join(', ')||'—';
+  const gl=g=>(S['sel_'+g]||[]).map((id,i)=>`<div style="margin:6px 0"><b>${i+1}. ${E(GM[id].name)}</b><br><span class="mut">${E(GM[id].sum)}</span></div>`).join('')||'<span class="mut">Not picked yet</span>';
+  return sec('👥 Players',`<div>🧟 <b>Kids (${cnt().k}):</b> ${ps('kid')}</div><div style="margin-top:6px">🧛 <b>Adults (${cnt().a}):</b> ${ps('adult')}</div>`,"editPlayers()")
+   +sec('🧟 Kids’ games',gl('kid'),"editGames('kid')")+sec('🧛 Adults’ games',gl('adult'),"editGames('adult')")
+   +sec('💀 Final games (Kids vs Adults)',FIN.map((id,i)=>`<div style="margin:6px 0"><b>${i+1}. ${E(GM[id].name)}</b><br><span class="mut">${E(GM[id].sum)}</span></div>`).join(''))
+   +`<div class="card"><h2>📜 How it works</h2><div class="mut">• Kids and adults each play 3 games × 3 rounds, at the same time.<br>• Points are awarded automatically from results.<br>• The top 2 in each group earn a secret ⚡ power for the final.<br>• Final: Kids vs Adults. Team average score wins!</div></div>`;
 }
-async function gamble(id,risky){if(!risky)return resolve(id,'🛡️ Played safe +4',4);const w=Math.random()<.5;await resolve(id,w?'💀 Risky… and it paid off! +12':'💀 Risky… the grave got you! −4',w?12:-4)}
-function curseHtml(p){return p.curse&&p.curse.r===S.fr?`<div class="curse">👻 A mystery spirit cursed you!<br><b>${E(p.curse.txt)}</b></div>`:''}
-function padHtml(p){
-  const v=p['rt'+S.fr],st=pad[p.id+S.fr];
-  if(typeof v==='number')return `<div class="pad" style="background:var(--card2)">${v>=9999?'👻 False start!':'⚡ '+v+' ms'}</div>`;
-  if(!st)return `<button class="big" onclick="padStart('${p.id}')">Ready? Start 👻</button>`;
-  if(st.s==='wait')return `<div class="pad wait" onpointerdown="padTap('${p.id}')">Wait for it…</div>`;
-  return `<div class="pad go" onpointerdown="padTap('${p.id}')">👻 BOO! TAP!</div>`;
+function setupUI(){
+  const both=(S.sel_kid||[]).length===3&&(S.sel_adult||[]).length===3;
+  if(S.edit)return `<div class="card"><h2>✏️ Edit setup</h2><p class="mut">The host can edit any section below, then return to the summary to confirm again.</p></div>`+leaderPicks()+summary();
+  if(!both)return `<div class="card"><h2>🎲 Choosing the games</h2><p class="mut">Registration is closed. A leader was picked at random for each group to choose their 3 games.</p>`+leadersHtml()+'</div>'+leaderPicks()+summary();
+  return `<div class="card"><h2>📋 Final summary</h2><p class="mut">Check everything. The host can confirm or go back to edit.</p></div>`+summary();
 }
-function padStart(id){const key=id+S.fr;pad[key]={s:'wait',t:setTimeout(()=>{if(pad[key]&&pad[key].s==='wait'){pad[key]={s:'go',t0:performance.now()};render()}},2000+Math.random()*3500)};render()}
-async function padTap(id){
-  const key=id+S.fr,st=pad[key];if(!st)return;let ms;
-  if(st.s==='wait'){clearTimeout(st.t);ms=9999}else ms=Math.round(performance.now()-st.t0);
-  delete pad[key];await db.doc('players/'+id).update({['rt'+S.fr]:ms});
+async function closeReg(){if(!guard())return;if(!canGo()){alert('Need at least 2 kids and 2 adults.');return}
+  const o={phase:'setup',edit:!!S.ret,ret:false,leaders:{...(S.leaders||{})},editing:null};
+  ['kid','adult'].forEach(g=>{const m=members(g);if(!o.leaders[g]||!by(o.leaders[g])||by(o.leaders[g]).group!==g){const own=m.filter(p=>!p.helper),pool=own.length?own:m;o.leaders[g]=pool[Math.floor(Math.random()*pool.length)].id;o['sel_'+g]=null}});
+  await upd(o)}
+async function reassign(g){if(!guard())return;const m=members(g).filter(p=>p.id!==S.leaders[g]);if(!m.length)return;await upd({['leaders']:{...S.leaders,[g]:m[Math.floor(Math.random()*m.length)].id},['sel_'+g]:null})}
+async function editPlayers(){if(!guard())return;await upd({phase:'reg',ret:true,edit:false,editing:null})}
+async function editGames(g){if(!guard())return;await upd({editing:g,edit:true});picks[g]=null}
+async function backSummary(){if(!guard())return;await upd({edit:false,editing:null})}
+async function goBack(){if(!guard())return;await upd({phase:'setup',edit:true,editing:null})}
+async function confirmSetup(){if(!guard())return;if(!canGo()){alert('Need at least 2 kids and 2 adults.');return}await upd({phase:'ready'})}
+async function startGames(){if(!guard())return;if(!canGo()){alert('Need at least 2 kids and 2 adults.');return}await upd({phase:'live',tkk:{st:'idle',gi:0,rd:1},tka:{st:'idle',gi:0,rd:1}})}
+async function rm(id){if(!guard())return;if(confirm('Remove player?'))await DB.doc('players/'+id).delete()}
+// ---------- LIVE GAMES ----------
+function trackGame(t){const g=t==='k'?'kid':'adult',tk=S['tk'+t]||{st:'idle',gi:0,rd:1};return{g,tk,gid:(S['sel_'+g]||[])[tk.gi],key:`${t}_${tk.gi}_${tk.rd}`,st:tstat(t)}}
+function stText(st){return {idle:'Waiting to start',intro:'Get ready',live:'LIVE',scored:'Round scored',done:'All done ✅',cancel:'Cancelled'}[st]||st}
+function liveStrip(){return `<div class="card"><h2>🎮 What’s happening</h2>`+['k','a'].map(t=>{const x=trackGame(t),gm=GM[x.gid];return `<div class="row"><span>${GI[x.g]} <b>${GL[x.g]}</b>: ${x.st==='idle'?'—':x.st==='done'||x.st==='cancel'?'':E(gm?gm.name:'')+` · Rd ${x.tk.rd}/3`}</span><span>${x.st==='live'?'<span class="live">LIVE</span>':stText(x.st)}</span></div>`}).join('')+'</div>'}
+function gameCard(gid){const x=GM[gid];return x?`<div class="gc"><b>${E(x.name)}</b><br>${E(x.sum)}<br><span class="mut">${E(x.how)}</span></div>`:''}
+function playUI(){
+  let h=leaderPicks();const ms=mine();
+  if(!ms.length)return h+`<div class="card"><h2>Who are you?</h2></div>`+existing();
+  ms.forEach(p=>{
+    const t=p.group==='kid'?'k':'a',x=trackGame(t);h+=`<div class="card"><h2>${GI[p.group]} ${E(p.name)}${p===ms[0]?'':'<span class="tag">playing for</span>'}</h2>`;
+    if(x.st==='idle')h+='<p class="mut">Waiting for the host to start the '+GL[x.g].toLowerCase()+' games…</p>';
+    else if(x.st==='done'||x.st==='cancel')h+=`<p>${x.st==='done'?'Your group’s games are finished! 🎉':'Your group’s games were cancelled.'}</p><p class="pts">${gpts(p)} points</p>`;
+    else{
+      h+=`<div class="mut">Game ${x.tk.gi+1} of 3 · Round ${x.tk.rd} of 3</div>`+gameCard(x.gid);
+      if(x.st==='intro')h+='<p class="mut">The host will start the round when everyone is ready…</p>';
+      else if(x.st==='scored'){const o=roundPts(x.key,x.gid,members(x.g));h+=`<div class="gc">Round result: <b>${o[p.id]!=null?(o[p.id]>=0?'+':'')+o[p.id]+' pts':'no score'}</b></div>`}
+      else h+=play(p,GM[x.gid],x.key);
+    }
+    h+='</div>';
+  });
+  return h;
 }
-function simHtml(p){
-  const v=p['sm'+S.fr],s=sim[p.id+S.fr];
-  if(typeof v==='number')return `<div class="pad" style="background:var(--card2)">🧠 Reached level ${v}</div>`;
-  if(!s)return `<button class="big" onclick="simStart('${p.id}')">Start memory test 🧠</button>`;
-  if(s.s==='show')return `<div class="pad" style="background:var(--card2);font-size:3rem">${s.cur==null?'👀':SYM[s.cur]}</div><div class="mut">Level ${s.seq.length} — watch!</div>`;
-  return `<div class="mut">Level ${s.seq.length} — repeat it!</div><div class="cards" style="grid-template-columns:repeat(4,1fr)">${SYM.map((x,i)=>`<button style="aspect-ratio:1" onclick="simTap('${p.id}',${i})">${x}</button>`).join('')}</div>`;
+function play(p,g,key){
+  const e=(R[key]||{})[p.id];
+  if(g.type==='act'){const r=Object.values(R[key]||{}).sort((a,b)=>a.v-b.v).findIndex(z=>z.pid===p.id);return `<div class="pad">👀 Do the activity!<br>The judge will rank everyone.${e?'<br>You’re ranked #'+(r+1):''}</div>`}
+  if(g.type==='react')return padHtml(p,key);
+  if(g.type==='mem')return simHtml(p,key);
+  if(e)return `<div class="gc">${E(e.t)}</div>`;
+  if(g.type==='gamble')return `<button class="big alt" onclick="gamble('${p.id}','${key}',0)">🛡️ Play safe: +4</button><button class="big" onclick="gamble('${p.id}','${key}',1)">💀 Go risky: 50% +12 / 50% −4</button>`;
+  return `<div class="cards">${[0,1,2].map(()=>`<button onclick="draw('${p.id}','${key}','${g.type}')">${g.type==='potion'?'🧪':'🂠'}</button>`).join('')}</div><div class="mut">Pick one…</div>`;
+}
+const put=(key,pid,v,t)=>DB.doc('res/'+key+'__'+pid).set({key,pid,v,t:t||''});
+async function draw(pid,key,kind){
+  if((R[key]||{})[pid])return;
+  const pool=kind==='potion'?POTIONS:CARDS,c=pool[Math.floor(Math.random()*pool.length)];let txt=c[0],pts=c[1];
+  if(c[2]==='steal'){const o=members('adult').filter(x=>x.id!==pid).sort((a,b)=>gpts(b)-gpts(a))[0];if(o&&gpts(o)>0){txt+=` — stole from ${o.name}!`;await DB.doc('players/'+o.id).update({adj:num(o.adj)-3})}else txt+=' (nobody to rob)'}
+  await put(key,pid,pts,txt);
+}
+async function gamble(pid,key,risky){if((R[key]||{})[pid])return;if(!risky)return put(key,pid,4,'🛡️ Played safe +4');const w=Math.random()<.5;await put(key,pid,w?12:-4,w?'💀 Risky… and it paid off! +12':'💀 Risky… the grave got you! −4')}
+function padHtml(p,key){
+  const e=(R[key]||{})[p.id],st=pad[p.id+key];
+  if(e)return `<div class="pad">${e.v>=9999?'👻 False start!':'⚡ '+e.v+' ms'}</div>`;
+  if(!st)return `<button class="big" onclick="padStart('${p.id}','${key}')">Ready? Start 👻</button>`;
+  if(st.s==='wait')return `<div class="pad wait" onpointerdown="padTap('${p.id}','${key}')">Wait for it…</div>`;
+  return `<div class="pad go" onpointerdown="padTap('${p.id}','${key}')">👻 BOO! TAP!</div>`;
+}
+function padStart(id,key){const k=id+key;pad[k]={s:'wait',t:setTimeout(()=>{if(pad[k]&&pad[k].s==='wait'){pad[k]={s:'go',t0:performance.now()};render()}},2000+Math.random()*3500)};render()}
+async function padTap(id,key){const k=id+key,st=pad[k];if(!st)return;let ms;if(st.s==='wait'){clearTimeout(st.t);ms=9999}else ms=Math.round(performance.now()-st.t0);delete pad[k];await put(key,id,ms)}
+function simHtml(p,key){
+  const e=(R[key]||{})[p.id],s=sim[p.id+key];
+  if(e)return `<div class="pad">🧠 Reached level ${e.v}</div>`;
+  if(!s)return `<button class="big" onclick="simStart('${p.id}','${key}')">Start memory test 🧠</button>`;
+  if(s.s==='show')return `<div class="pad" style="font-size:3rem">${s.cur==null?'👀':SYM[s.cur]}</div><div class="mut">Level ${s.seq.length} — watch!</div>`;
+  return `<div class="mut">Level ${s.seq.length} — repeat it!</div><div class="cards" style="grid-template-columns:repeat(4,1fr)">${SYM.map((x,i)=>`<button style="aspect-ratio:1" onclick="simTap('${p.id}','${key}',${i})">${x}</button>`).join('')}</div>`;
 }
 function simPlay(k){const s=sim[k];s.s='show';s.pos=0;s.cur=null;let i=0;
-  const step2=()=>{if(sim[k]!==s)return;if(i>=s.seq.length){s.cur=null;s.s='in';render();return}s.cur=s.seq[i];render();setTimeout(()=>{if(sim[k]!==s)return;s.cur=null;render();i++;setTimeout(step2,250)},650)};
-  render();setTimeout(step2,600)}
-function simStart(id){const k=id+S.fr;sim[k]={seq:[Math.floor(Math.random()*4)]};simPlay(k)}
-async function simTap(id,i){const k=id+S.fr,s=sim[k];if(!s||s.s!=='in')return;
-  if(s.seq[s.pos]!==i){const sc=s.seq.length-1;delete sim[k];await db.doc('players/'+id).update({['sm'+S.fr]:sc});return}
+  const st2=()=>{if(sim[k]!==s)return;if(i>=s.seq.length){s.cur=null;s.s='in';render();return}s.cur=s.seq[i];render();setTimeout(()=>{if(sim[k]!==s)return;s.cur=null;render();i++;setTimeout(st2,250)},650)};
+  render();setTimeout(st2,600)}
+function simStart(id,key){const k=id+key;sim[k]={seq:[Math.floor(Math.random()*4)]};simPlay(k)}
+async function simTap(id,key,i){const k=id+key,s=sim[k];if(!s||s.s!=='in')return;
+  if(s.seq[s.pos]!==i){const sc=s.seq.length-1;delete sim[k];await put(key,id,sc);return}
   s.pos++;if(s.pos>=s.seq.length){s.seq.push(Math.floor(Math.random()*4));simPlay(k)}else render()}
+// ---------- BOARDS ----------
+function boards(){
+  const pwl=(S.phase==='final'||S.phase==='done')?(S.pw||[]):calcPower().hold,tl=S.pwt||[];
+  const tag=p=>(pwl.includes(p.id)?'<span class="tag">⚡ power'+((S.phase==='final'||S.phase==='done')&&tl.includes(p.id)?' 🪙':'')+'</span>':'')+(p.helper&&by(p.helper)?`<span class="tag">📱 ${E(by(p.helper).name)}</span>`:'');
+  const row=(p,v)=>`<div class="row"><span>${E(p.name)}${tag(p)}</span><span class="pts">${v}</span></div>`;
+  let h='';
+  if(S.phase==='final'||S.phase==='done')h+=`<div class="card"><h2>🏆 Everyone</h2><div class="mut">Prelim Power (0–10) + final points</div>`+[...P].sort((a,b)=>total(b)-total(a)).map(p=>row(p,total(p))).join('')+'</div>';
+  ['kid','adult'].forEach(g=>{h+=`<div class="card"><h2>${GI[g]} ${GL[g]} <span class="mut">(top 2 earn ⚡)</span></h2>`+members(g).sort((a,b)=>gpts(b)-gpts(a)).map(p=>row(p,gpts(p))).join('')+'</div>'});
+  return h;
+}
+const teamBoard=()=>`<div class="card"><h2>⚔️ Team score</h2><div class="vs"><div>🧟 Kids<b>${teamAvg('kid').toFixed(1)}</b></div><div>🧛 Adults<b>${teamAvg('adult').toFixed(1)}</b></div></div><div class="mut" style="margin-top:6px">Average per player, so any team size is fair!</div></div>`;
+// ---------- FINAL ----------
+function curseHtml(p){return p.curse&&p.curse.r===S.fi?`<div class="curse">👻 A mystery spirit cursed you!<br><b>${E(p.curse.txt)}</b></div>`:''}
+function finalUI(){
+  const ms=mine(),gid=fg()[S.fi],st=fstat(),key=`f_${S.fi}_1`;let h=`<div class="card"><h2>${E(GM[gid]?GM[gid].name:'')} <span class="mut">Game ${S.fi+1} of ${fg().length}</span></h2>${gameCard(gid)}`;
+  if(!ms.length)return h+'</div>'+existing();
+  ms.forEach(p=>{h+=`<div style="margin:10px 0"><b>${E(p.name)}</b><span class="tag">${p.group==='kid'?'Kids':'Adults'}</span>`+curseHtml(p);
+    if(st==='intro')h+='<p class="mut">Host will start the game…</p>';
+    else if(st==='scored'){const o=roundPts(key,gid,P);h+=`<div class="gc">Result: <b>${o[p.id]!=null?'+'+o[p.id]+' pts':'no score'}</b></div>`}
+    else if(st==='live')h+=GM[gid].type==='react'?padHtml(p,key):GM[gid].type==='mem'?simHtml(p,key):charHtml(p);
+    if(st==='intro'||st==='live')h+=powerHtml(p);
+    h+='</div>'});
+  return h+'</div>';
+}
 function charHtml(p){
-  if(S.perf===p.id){const k=p.id+'_'+num(S.pn);return `<div class="curse" style="border-color:var(--or);background:var(--card2)">🎭 YOU’RE UP! Describe your word without saying it.</div>`+(wd[k]?`<div class="pad" style="background:var(--card2)">${E(wd[k])}</div>`:`<button class="big" onclick="showWord('${k}')">Show my secret word</button>`)}
-  if(S.perf&&by(S.perf))return `<div class="pad" style="background:var(--card2)">👀 ${E(by(S.perf).name)} is acting — guess!</div>`;
+  if(S.perf===p.id){const k=p.id+'_'+num(S.pn);return `<div class="curse" style="border-color:var(--or);background:var(--card2)">🎭 YOU’RE UP! Describe your word without saying it.</div>`+(wd[k]?`<div class="pad">${E(wd[k])}</div>`:`<button class="big" onclick="showWord('${k}')">Show my secret word</button>`)}
+  if(S.perf&&by(S.perf))return `<div class="pad">👀 ${E(by(S.perf).name)} is acting — guess!</div>`;
   return '<div class="mut">Waiting for the host to pick the next actor…</div>';
 }
 function showWord(k){wd[k]=WORDS[Math.floor(Math.random()*WORDS.length)];render()}
 function powerHtml(p){
   if(!(S.pw||[]).includes(p.id))return '';
   if(p.powerUsed)return '<div class="mut">⚡ Your power has been used</div>';
-  const st=pw[p.id]||{};
+  const st=pws[p.id]||{};
   return `<div class="card" style="background:#3a1457"><b>⚡ Your secret power</b><div class="mut">Curse someone on the OTHER team with a twist. They won’t know who did it! Cast it before their turn.</div><div class="gap" style="margin-top:6px">${TWISTS.map((t,i)=>`<button class="sm ${st.tw===i?'':'alt'}" onclick="pickTw('${p.id}',${i})">${E(t)}</button>`).join('')}</div>`+(st.tw!=null?`<div class="mut" style="margin-top:8px">Choose your target:</div><div class="gap">${P.filter(x=>x.group!==p.group).map(t=>`<button class="sm" onclick="cast('${p.id}','${t.id}')">${E(t.name)}</button>`).join('')}</div>`:'')+'</div>';
 }
-function pickTw(id,i){pw[id]={tw:i};render()}
-async function cast(id,tid){const st=pw[id],t=by(tid);if(!st||!t||!confirm('Curse '+t.name+' with: '+TWISTS[st.tw]+'?'))return;
-  await db.doc('players/'+tid).update({curse:{txt:TWISTS[st.tw],r:S.fr}});await db.doc('players/'+id).update({powerUsed:true});delete pw[id]}
-function chk(key,items,sel){return items.map(([v,l])=>`<label class="row" style="justify-content:flex-start"><input type="checkbox" style="width:auto" ${sel.includes(v)?'checked':''} onchange="tg('${key}',${typeof v==='number'?v:`'${v}'`})"> ${E(l)}</label>`).join('')}
-async function tg(key,v){const cur=new Set(S[key]||(key==='kidSel'?kidSel():key==='adSel'?adSel():finSel()));cur.has(v)?cur.delete(v):cur.add(v);await db.doc('game/state').update({[key]:ORD[key].filter(x=>cur.has(x))})}
-function hostPanel(){
-  let h=`<div class="card"><h2>🔑 Host controls</h2>`;const ph=S.phase;window._st=o=>db.doc('game/state').update(o);
-  const nk=kidSel().length,na=adSel().length,nf=finSel().length;
-  if(ph==='lobby'){
-    h+=`<b>🧟 Kids games</b>`+chk('kidSel',KIDCH.map((c,i)=>[i,c[0]]),kidSel())+`<b>🧛 Parents games</b>`+chk('adSel',Object.entries(ADG),adSel())+`<b>💀 Final games</b>`+chk('finSel',Object.entries(FING),finSel());
-    h+='<p class="mut">Players:</p>';
-    P.forEach(p=>{h+=`<div class="row"><span>${p.group==='kid'?'🧟':'🧛'} ${E(p.name)}</span><button class="sm alt" onclick="rm('${p.id}')">✕</button></div>`});
-    h+=`<div class="gap" style="margin-top:8px"><input id="np" placeholder="Add a player" style="flex:1"><select id="ng"><option value="kid">Kid</option><option value="adult">Parent</option></select><button onclick="addP()">Add</button></div>`;
-    h+=`<button class="big" onclick="_st({phase:'kids',kc:0})">Start Kids Games 🧟</button>`;
-  }else if(ph==='kids'){
-    h+=`<div class="gap"><button class="alt" onclick="_st({kc:Math.max(0,${S.kc}-1)})">◀</button><b style="flex:1;text-align:center">${E((KIDCH[kidSel()[S.kc]]||[''])[0])} (${S.kc+1}/${nk})</b><button class="alt" onclick="_st({kc:Math.min(${nk-1},${S.kc}+1)})">Next ▶</button></div>`;
-    kids().forEach(k=>{h+=`<div class="row"><span>${k.claim===S.kc?'✅ ':''}${E(k.name)}</span><span class="gap"><button class="sm" onclick="adj('${k.id}','kidPts',1)">+1</button><button class="sm" onclick="adj('${k.id}','kidPts',3)">+3</button><button class="sm" onclick="adj('${k.id}','kidPts',5)">+5</button></span></div>`});
-    h+=`<button class="big" onclick="_st({phase:'adults',ar:1})">Kids done → Parents games 🧛</button>`;
-  }else if(ph==='adults'){
-    h+=`<p>${E(ADG[adSel()[S.ar-1]]||'')} — round ${S.ar} of ${na}</p>`;
-    h+=S.ar<na?`<button class="big" onclick="_st({ar:${S.ar}+1})">Next round ▶</button>`:`<button class="big" onclick="_st({phase:'final',fr:1,pw:holders(),perf:null})">Parents done → FINAL 💀</button>`;
-  }else if(ph==='final'){
-    const g=finSel()[S.fr-1],f=g==='duel'?'rt':'sm';
-    h+=`<p>${E(FING[g]||'')} — round ${S.fr} of ${nf} ${S['sc'+S.fr]?'✅':''}</p>`;
-    if(g==='charades'){
-      h+=`<div class="mut">Pick who acts next (power holders cast curses first!):</div><div class="gap">${P.map(p=>`<button class="sm ${S.perf===p.id?'':'alt'}" onclick="_st({perf:'${p.id}',pn:${num(S.pn)}+1})">${E(p.name)}</button>`).join('')}</div>`;
-      if(S.perf)h+=`<div class="gap" style="margin-top:8px"><button onclick="perfDone(1)">✅ Guessed +5</button><button class="alt" onclick="perfDone(0)">❌ Missed</button></div>`;
-      if(!S['sc'+S.fr])h+=`<button class="big alt" onclick="_st({sc${S.fr}:true,perf:null})">Finish this round</button>`;
-    }else{
-      h+=`<div class="mut">${P.filter(p=>typeof p[f+S.fr]==='number').length}/${P.length} have played</div>`;
-      if(!S['sc'+S.fr])h+=`<button class="big" onclick="scoreRound()">Score this round ⚡</button>`;
-    }
-    if(S['sc'+S.fr])h+=S.fr<nf?`<button class="big" onclick="_st({fr:${S.fr}+1,perf:null})">Next final game ▶</button>`:`<button class="big" onclick="_st({phase:'done'})">👑 Crown the champions!</button>`;
-  }else h+=`<button class="alt big" onclick="if(confirm('Wipe everything and start over?'))resetAll()">Reset game</button>`;
-  return h+'</div>';
-}
-async function perfDone(g){if(g)await adj(S.perf,'finPts',5);await db.doc('game/state').update({perf:null})}
-async function rm(id){if(confirm('Remove player?'))await db.doc('players/'+id).delete()}
-async function addP(){const n=$('#np').value.trim();if(!n)return;await db.collection('players').doc().set({name:n,group:$('#ng').value,helper:null,kidPts:0,adPts:0,finPts:0,picks:[]})}
-async function scoreRound(){
-  const g=finSel()[S.fr-1],T=[10,8,6,5,4,3,2,1];let r;
-  if(g==='duel'){const f='rt'+S.fr;r=P.filter(p=>typeof p[f]==='number'&&p[f]<9999).sort((a,b)=>a[f]-b[f])}
-  else{const f='sm'+S.fr;r=P.filter(p=>num(p[f])>0).sort((a,b)=>b[f]-a[f])}
-  for(let i=0;i<r.length;i++)await db.doc('players/'+r[i].id).update({finPts:num(r[i].finPts)+(T[i]||1)});
-  await db.doc('game/state').update({['sc'+S.fr]:true});
-}
-async function resetAll(){for(const p of P)await db.doc('players/'+p.id).delete();await db.doc('game/state').delete();localStorage.removeItem('hh_me');me=null}
+function pickTw(id,i){pws[id]={tw:i};render()}
+async function cast(id,tid){const st=pws[id],t=by(tid);if(!st||!t||!confirm('Curse '+t.name+' with: '+TWISTS[st.tw]+'?'))return;
+  await DB.doc('players/'+tid).update({curse:{txt:TWISTS[st.tw],r:S.fi}});await DB.doc('players/'+id).update({powerUsed:true});delete pws[id]}
 function winner(){
   const k=teamAvg('kid'),a=teamAvg('adult'),t=[...P].sort((x,y)=>total(y)-total(x));if(!t.length)return '';
-  const kc=kids().sort((x,y)=>total(y)-total(x))[0],ac=adults().sort((x,y)=>total(y)-total(x))[0];
-  return `<div class="card"><div class="crown">👑</div><h1>${k>a?'🧟 THE KIDS BEAT THE PARENTS!':a>k?'🧛 PARENTS WIN!':'😱 IT’S A TIE!'}</h1><div class="sub">MVP: ${E(t[0].name)} (${total(t[0])} pts) 🎉🎃🦇</div><div class="mut" style="text-align:center">${kc?'Top kid: '+E(kc.name):''} ${ac?' · Top parent: '+E(ac.name):''}</div></div>`;
+  const kc=members('kid').sort((x,y)=>total(y)-total(x))[0],ac=members('adult').sort((x,y)=>total(y)-total(x))[0],tie=Math.abs(k-a)<1e-9;
+  return `<div class="card"><div class="crown">👑</div><h1>${tie?'😱 IT’S A TIE!':k>a?'🧟 THE KIDS BEAT THE ADULTS!':'🧛 THE ADULTS WIN!'}</h1><div class="mut" style="text-align:center">MVP: <b>${E(t[0].name)}</b> (${total(t[0])} pts)<br>${kc?'Top kid: '+E(kc.name):''} ${ac?' · Top adult: '+E(ac.name):''}</div>${tie?'<p class="mut" style="text-align:center">The host can start a sudden-death round.</p>':''}</div>`;
 }
+// ---------- HOST PANEL ----------
+function hostPanel(){
+  if(!ok())return `<div class="card"><button class="alt" onclick="unlock()">🔒 Host controls — enter passcode</button></div>`;
+  let h=`<div class="card" style="border-color:var(--gr)"><h2>🔓 Host controls <button class="sm alt" onclick="lock()">Lock now</button></h2><div class="mut">Auto-locks after 3 minutes without use.</div>`;
+  const ph=S.phase,c=cnt();
+  if(ph==='reg'){
+    h+=`<p>🧟 ${c.k} kids · 🧛 ${c.a} adults</p>`+P.map(p=>`<div class="row"><span>${GI[p.group]} ${E(p.name)}${p.helper&&by(p.helper)?`<span class="tag">📱 ${E(by(p.helper).name)}</span>`:''}</span><button class="sm alt" onclick="rm('${p.id}')">✕</button></div>`).join('');
+    h+=canGo()?`<button class="big" onclick="closeReg()">Close registration → pick games</button>`:`<p class="mut">⚠️ Need at least 2 kids and 2 adults (now ${c.k} kids, ${c.a} adults).</p><button class="big" disabled>Close registration</button>`;
+  }else if(ph==='setup'){
+    const both=(S.sel_kid||[]).length===3&&(S.sel_adult||[]).length===3;
+    if(S.edit)h+=`<p class="mut">Tap ✏️ Edit on a section above to change it. Games are re-picked by that group’s leader on their phone.</p>`+['kid','adult'].map(g=>`<button class="alt sm" onclick="reassign('${g}')">🔀 New ${GL[g].toLowerCase()} leader</button> `).join('')+`<button class="big" ${both?'':'disabled'} onclick="backSummary()">⬅️ Back to summary</button>`;
+    else if(!both)h+=`<p class="mut">Waiting for leaders to pick games.</p>`+['kid','adult'].map(g=>`<button class="alt sm" onclick="reassign('${g}')">🔀 New ${GL[g].toLowerCase()} leader</button> `).join('');
+    else h+=`<button class="big" onclick="confirmSetup()">✅ Confirm — ready to start</button><button class="big alt" onclick="goBack()">✏️ Go back and edit</button>`;
+  }else if(ph==='ready')h+=`<button class="big" onclick="startGames()">▶ Start the games</button><button class="big alt" onclick="goBack()">✏️ Go back and edit</button>`;
+  else if(ph==='live')h+=liveHost();
+  else if(ph==='final')h+=finalHost();
+  else if(ph==='done'){if(Math.abs(teamAvg('kid')-teamAvg('adult'))<1e-9)h+=`<button class="big" onclick="suddenDeath()">⚡ Sudden-death reaction round</button>`}
+  if(ph==='live'||ph==='final')h+=fixPts();
+  h+=`<button class="big red" onclick="resetAll()">Reset everything</button></div>`;
+  return h;
+}
+function liveHost(){
+  let h='<h2>Games in progress</h2>';
+  ['k','a'].forEach(t=>{const x=trackGame(t),gm=GM[x.gid],n=(R[x.key]||{});
+    h+=`<div class="gc"><b>${GI[x.g]} ${GL[x.g]}</b> — ${E(gm?gm.name:'')} · Game ${x.tk.gi+1}/3 · Round ${x.tk.rd}/3<br><span class="mut">${stText(x.st)}${x.st==='live'?` · ${Object.keys(n).length}/${members(x.g).length} played`:''}</span>`;
+    if(x.st==='idle')h+=`<button class="big" onclick="startTrack('${t}')">▶ Start ${GL[x.g].toLowerCase()} games</button>`;
+    if(x.st==='intro')h+=`<button class="big" onclick="startRound('${t}')">▶ Start round 1</button>`;
+    if(x.st==='live'){if(gm.type==='act')h+=placeUI(x.key,x.g);h+=`<button class="big alt" onclick="endRound('${x.key}')">⏹ End round & score</button>`}
+    if(x.st==='scored')h+=`<button class="big" onclick="nextRound('${t}')">${x.tk.rd<3?'Next round ▶':x.tk.gi<2?'Next game ▶':'Finish ✅'}</button>`;
+    if(['intro','live','scored'].includes(x.st))h+=`<button class="sm alt" onclick="skipGame('${t}')">⏭ Skip this game</button> <button class="sm red" onclick="cancelTrack('${t}')">✕ Cancel ${GL[x.g].toLowerCase()} games</button>`;
+    h+='</div>'});
+  const fin=['k','a'].every(t=>['done','cancel'].includes(tstat(t)));
+  h+=`<button class="big ${fin?'':'alt'}" onclick="startFinal(${fin})">💀 Start the FINAL${fin?'':' (groups not finished)'}</button>`;
+  return h;
+}
+function placeUI(key,g){const e=R[key]||{},ord=Object.values(e).sort((a,b)=>a.v-b.v).map(x=>x.pid);
+  return `<div class="mut" style="margin-top:6px">Tap players in finishing order (best first). Tap again to remove.</div><div class="gap">`+members(g).map(p=>{const i=ord.indexOf(p.id);return `<button class="sm ${i>=0?'':'alt'}" onclick="place('${key}','${p.id}')">${i>=0?'#'+(i+1)+' ':''}${E(p.name)}</button>`}).join('')+'</div>'}
+async function place(key,pid){if(!guard())return;const e=R[key]||{};if(e[pid])await DB.doc('res/'+key+'__'+pid).delete();else await put(key,pid,Math.max(0,...Object.values(e).map(x=>x.v))+1,'')}
+async function startTrack(t){if(!guard())return;await upd({['tk'+t]:{st:'intro',gi:0,rd:1}})}
+async function startRound(t){if(!guard())return;const tk=S['tk'+t];await DB.doc('rds/'+`${t}_${tk.gi}_${tk.rd}`).set({st:'live'});await upd({['tk'+t]:{...tk,st:'live'}})}
+async function endRound(key){if(!guard())return;await DB.doc('rds/'+key).set({st:'done'})}
+async function nextRound(t){if(!guard())return;const tk=S['tk'+t];
+  if(tk.rd<3){await DB.doc('rds/'+`${t}_${tk.gi}_${tk.rd+1}`).set({st:'live'});await upd({['tk'+t]:{gi:tk.gi,rd:tk.rd+1,st:'live'}})}
+  else if(tk.gi<2)await upd({['tk'+t]:{gi:tk.gi+1,rd:1,st:'intro'}});
+  else await upd({['tk'+t]:{gi:tk.gi,rd:tk.rd,st:'done'}})}
+async function skipGame(t){if(!guard()||!confirm('Skip this game? Unfinished rounds will not score.'))return;const tk=S['tk'+t];
+  for(let r=tk.rd;r<=3;r++){const k=`${t}_${tk.gi}_${r}`;if(RD[k]!=='done')await DB.doc('rds/'+k).set({st:'cancel'})}
+  await upd({['tk'+t]:tk.gi<2?{gi:tk.gi+1,rd:1,st:'intro'}:{gi:tk.gi,rd:tk.rd,st:'done'}})}
+async function cancelTrack(t){if(!guard()||!confirm('Cancel all remaining games for this group?'))return;const tk=S['tk'+t];
+  for(let r=tk.rd;r<=3;r++){const k=`${t}_${tk.gi}_${r}`;if(RD[k]!=='done')await DB.doc('rds/'+k).set({st:'cancel'})}
+  await upd({['tk'+t]:{...tk,st:'cancel'}})}
+async function startFinal(fin){if(!guard())return;if(!fin&&!confirm('A group is still playing. Start the final anyway?'))return;
+  const pw=calcPower();await upd({phase:'final',fi:0,fst:'intro',pw:pw.hold,pwt:pw.tie,perf:null})}
+function finalHost(){
+  const gid=fg()[S.fi],gm=GM[gid],st=fstat(),key=`f_${S.fi}_1`,last=S.fi>=fg().length-1;
+  let h=`<h2>Final: ${E(gm.name)} (${S.fi+1}/${fg().length})</h2><div class="mut">${stText(st)}${st==='live'?` · ${Object.keys(R[key]||{}).length} results in`:''}</div>`;
+  if(st==='intro')h+=`<p class="mut">Power holders can cast curses now.</p><button class="big" onclick="startFinalRound()">▶ Start this game</button>`;
+  if(st==='live'){
+    if(gm.type==='desc'){
+      h+=`<div class="mut">Pick who acts next:</div><div class="gap">${P.map(p=>`<button class="sm ${S.perf===p.id?'':'alt'}" onclick="setPerf('${p.id}')">${E(p.name)}</button>`).join('')}</div>`;
+      if(S.perf)h+=`<div class="gap" style="margin-top:8px"><button onclick="perfDone(1)">✅ Guessed +5</button><button class="alt" onclick="perfDone(0)">❌ Missed</button></div>`}
+    h+=`<button class="big alt" onclick="endRound('${key}')">⏹ End game & score</button>`}
+  if(st==='scored')h+=last?`<button class="big" onclick="crown()">👑 Crown the champions!</button>`:`<button class="big" onclick="nextFinal()">Next final game ▶</button>`;
+  if(['intro','live','scored'].includes(st)&&!last)h+=`<button class="sm alt" onclick="skipFinal()">⏭ Skip this game</button>`;
+  return h;
+}
+async function startFinalRound(){if(!guard())return;await DB.doc('rds/'+`f_${S.fi}_1`).set({st:'live'});await upd({fst:'live'})}
+async function nextFinal(){if(!guard())return;await upd({fi:S.fi+1,fst:'intro',perf:null})}
+async function skipFinal(){if(!guard()||!confirm('Skip this final game?'))return;const k=`f_${S.fi}_1`;if(RD[k]!=='done')await DB.doc('rds/'+k).set({st:'cancel'});await upd({fi:S.fi+1,fst:'intro',perf:null})}
+async function setPerf(id){if(!guard())return;await upd({perf:id,pn:num(S.pn)+1})}
+async function perfDone(g){if(!guard())return;if(g)await put(`f_${S.fi}_1`,S.perf,5,'guessed');await upd({perf:null})}
+async function crown(){if(!guard())return;await upd({phase:'done'})}
+async function suddenDeath(){if(!guard())return;const n=fg().length;await upd({sd:num(S.sd)+1,phase:'final',fi:n,fst:'intro',perf:null})}
+function fixPts(){return `<h2 style="margin-top:12px">🛠️ Fix points</h2><div class="mut">Manual +1 / −1 (for mistakes only).</div>`+P.map(p=>`<div class="row"><span>${GI[p.group]} ${E(p.name)}</span><span class="gap"><span class="pts">${num(p.adj)>0?'+':''}${num(p.adj)}</span><button class="sm alt" onclick="adjP('${p.id}',-1)">−</button><button class="sm alt" onclick="adjP('${p.id}',1)">+</button></span></div>`).join('')}
+async function adjP(id,d){if(!guard())return;await DB.doc('players/'+id).update({adj:num(by(id).adj)+d})}
+async function resetAll(){if(!guard()||!confirm('Wipe EVERYTHING and start over?'))return;
+  for(const p of P)await DB.doc('players/'+p.id).delete();
+  for(const k in cache.res||{})await DB.doc('res/'+k).delete();
+  for(const k in cache.rds||{})await DB.doc('rds/'+k).delete();
+  await DB.doc('game/state').delete();localStorage.removeItem('hh_me');me=null;hostUntil=0;sent.clear();picks={}}
 init();
 </script></body></html>
