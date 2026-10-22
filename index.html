@@ -37,8 +37,8 @@ textarea,input[type=text],input:not([type]){width:100%;margin:4px 0}
 .pick{background:var(--card2);border:2px solid #4d2f78;border-radius:14px;padding:10px;margin:8px 0;cursor:pointer}
 .pick.on{border-color:var(--or);background:#4a2a14}
 .gc{background:var(--card2);border-radius:14px;padding:10px;margin:8px 0}
-.live{display:inline-block;background:var(--rd);color:#fff;border-radius:8px;padding:1px 7px;font-size:.7rem;font-weight:800}
-</style></head><body><div id="app"><div class="mut" style="text-align:center">Summoning the spirits…</div></div>
+.ov{position:fixed;inset:0;z-index:50;background:#140a1f;overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 12px) 14px 24px}.ovh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:1.05rem}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.hole{aspect-ratio:1;font-size:2.6rem;background:#3a2360;border:0;border-radius:50%;color:#fff}.g7{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}.g7 button{background:transparent;padding:4px 0;font-size:1.45rem;color:#fff}.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.card2{aspect-ratio:1;font-size:2.2rem;background:var(--or);color:#1a0a00;border-radius:12px}.sw{width:38px;height:38px;border-radius:50%;border:3px solid #fff3}.opt{display:block;width:100%;text-align:left;margin:6px 0;background:var(--card2);color:var(--tx);border:2px solid #4d2f78}.opt.ok{border-color:var(--gr)}.opt.bad{border-color:var(--rd)}.live{display:inline-block;background:var(--rd);color:#fff;border-radius:8px;padding:1px 7px;font-size:.7rem;font-weight:800}
+</style></head><body><div id="ov" style="display:none"></div><div id="app"><div class="mut" style="text-align:center">Summoning the spirits…</div></div>
 <script>
 // ====== YOUR FIREBASE DATABASE URL ======
 const FIREBASE_URL='https://halloween-party-3d57a-default-rtdb.firebaseio.com';
@@ -59,32 +59,67 @@ const DB={
 // ---------- GAME LIBRARY ----------
 const T=[10,7,5,4,3,2,1];
 const GM={};
-const D=(type,id,name,sum,how)=>GM[id]={id,type,name,sum,how};
-D('act','zw','🧟 Zombie Walk','Slow-motion zombie race across the room.','Line up. On GO, walk like a zombie to the finish line and back. No running, no laughing! The judge ranks who finishes first with the best zombie style.');
-D('act','mw','🧻 Mummy Wrap','Wrap a partner in toilet paper.','Pair up. You have 60 seconds to wrap your partner head to toe in toilet paper without tearing it. The judge ranks the best wrappers.');
-D('act','pt','🎃 Pumpkin Toss','Toss bean bags into a pumpkin bucket.','Everyone gets 3 tosses from behind the line. Most bean bags in the bucket wins. The judge ranks by bags in.');
-D('act','fd','🕺 Freeze Dance','Dance until the music stops, then freeze!','Dance while the music plays. When it stops, freeze like a statue. Wobblers are out. Last one still frozen wins.');
-D('act','gh','👻 Ghost Hunt','Race to find hidden paper ghosts.','Hide 5 paper ghosts around the room. On GO, find as many as you can in 2 minutes. Most ghosts found wins.');
-D('act','wp','🧙 Witch’s Potion','Spoon “eyeballs” into the cauldron.','Carry grapes (“eyeballs”) on a spoon to the cauldron bowl. Most delivered in 60 seconds wins. Dropped ones don’t count.');
-D('act','sw','🕸️ Spider Web Crawl','Crawl under a yarn web without touching it.','Stretch yarn across a doorway or hallway. Crawl under without touching it. Fewest touches and fastest time wins.');
-D('act','cc','🍬 Candy Corn Spoon Race','Carry candy corn on a spoon.','Balance candy corn on a spoon and race across the room. Drop it and you restart. First across wins.');
-D('act','bs','🧹 Broomstick Race','Ride a broomstick around a cone.','Straddle a broomstick, gallop around the cone and back. Fastest rider wins.');
-D('act','mf','🎭 Monster Faces','Make the scariest face and hold it.','Make your scariest monster face and hold it for 5 seconds without laughing. The judge picks the scariest.');
-D('cards','cards','🃏 Trick-or-Treat Cards','Pick a mystery card: treats, tricks and curses!','Each round, tap one of three face-down cards. Treats give points, tricks are silly dares (do the dare for the points!), and curses cost points.');
-D('gamble','gamble','🎲 Grave Gamble','Play it safe or risk it all.','Each round choose: play safe for +4, or go risky for a 50/50 shot at +12 or −4.');
-D('potion','potion','🧪 Potion Roulette','Drink a mystery potion.','Each round, pick one of three potions. It might be great, it might be gross, it might steal points!');
-D('react','react','⚡ Ghost Reaction','Fastest finger wins.','Tap Start, wait for the ghost to appear, then tap as fast as you can. Tapping early is a false start. Fastest gets the most points.');
-D('mem','mem','🧠 Spooky Memory','Repeat the spooky pattern.','Watch the symbols flash, then tap them in the same order. The pattern grows each level. The highest level wins.');
-D('desc','desc','🎭 Describe the Spook','Describe your secret word without saying it!','The actor sees a secret word on their phone and describes it to their team without saying it. The team guesses. The host marks if they got it: +5 points.');
-const KID_G=['zw','mw','pt','fd','gh','wp','sw','cc','bs','mf'],ADU_G=['cards','gamble','potion','react','mem'],FIN=['react','mem','desc'];
+const D=(type,mode,id,name,sum,how)=>GM[id]={id,type,mode,name,sum,how};
+D('low','match','match','🃏 Memory Match','Flip spooky cards and find the pairs.','Tap two cards to flip them. If they match, they stay face up. Find all 6 pairs with the fewest moves and the fastest time. Fewest moves wins; time breaks ties.');
+D('high','whack','whack','👻 Whack-a-Ghost','Tap ghosts, avoid bats!','You have 20 seconds. Tap every 👻 that pops up (+1). Don’t tap the 🦇 bats (−1). The highest score wins.');
+D('high','sort','sort','🍬 Treat or Trick Sorter','Sort the treats from the tricks, fast!','You have 30 seconds. Each item is either a TREAT (candy, yummy) or a TRICK (gross, creepy). Tap the right button. Right answer +1, wrong answer −1. Highest score wins.');
+D('low','hunt','hunt','🔎 Find the Odd One','Spot the sneaky odd emoji in the crowd.','3 pictures, each full of the same emoji with ONE different one hiding. Tap the odd one out. Wrong taps add a 1 second penalty. Fastest total time wins.');
+D('high','mem','mem','🧠 Spooky Pattern','Copy the growing pattern.','Watch the symbols flash, then tap them in the same order. The pattern gets longer each level. Reach the highest level to win.');
+D('vote','color','color','🎨 Coloring Contest','Color a haunted scene, then everyone votes.','Color the haunted scene: tap a part of the picture, then tap a color. Tap Done when you like it. Then you’ll see everyone’s art (no names!) and vote for your favorite. You can’t vote for your own. Most votes wins.');
+D('vote','monster','monster','👹 Monster Maker','Build the silliest monster, then vote.','Pick a body color, eyes, mouth and hat to build your monster. Tap Done. Then vote for the funniest monster (not your own). Most votes wins.');
+D('high','mc','realfake','🤥 Real or Fake?','Spot the fake Halloween fact.','Each round has 3 statements about Halloween and spooky stuff. Tap REAL or FAKE. Correct answers earn points, and answering faster earns a bonus. Most points wins the round.');
+D('bluff','bluff','bluff','🎭 Fake It Till You Make It','Write a believable fake answer. Fool your friends!','Each round has one weird question. Everyone secretly writes a fake answer. Then you all vote on which answer is REAL. You get 8 points for picking the real answer and 5 points every time someone picks your fake.');
+D('low','year','year','📅 Name That Year','Closest guess wins.','Each round has 3 questions about when a spooky movie, book or song came out. Type your best guess for the year. The smallest total miss wins the round.');
+D('high','mc','jokes','🤡 Finish the Joke','Pick the real punchline.','Each round has 3 classic Halloween dad jokes. Pick the real punchline from 4 choices. Faster correct answers earn a bonus. Groan responsibly.');
+D('likely','likely','likely','🫵 Most Likely To…','Vote for the friend who fits.','Each round has 3 silly prompts. For each one, tap the adult most likely to do it (not yourself). The most-voted person for each prompt gets 6 points. Be nice… ish.');
+D('high','mc','pop','🎬 Spooky Pop-Culture Trivia','Monsters, movies and candy.','Each round has 3 multiple-choice questions about spooky movies, shows and characters. Correct answers earn points, and faster answers earn a bonus. Most points wins.');
+D('low','react','react','⚡ Ghost Reaction','Fastest finger wins.','Tap Start, wait for the ghost to appear, then tap as fast as you can. Tapping early is a false start. Fastest gets the most points.');
+D('direct','desc','desc','🎭 Describe the Spook','Describe your secret word without saying it!','The actor sees a secret word on their phone and describes it to their team without saying it. The team guesses. The host marks if they got it: +5 points.');
+const KID_G=['match','whack','sort','hunt','mem','color','monster'],ADU_G=['realfake','bluff','year','jokes','likely','pop'],FIN=['react','mem','desc'];
+const TWO=['color','monster','bluff'];
 const GL={kid:'Kids',adult:'Adults'},GI={kid:'🧟',adult:'🧛'},GAMES={kid:KID_G,adult:ADU_G};
-const CARDS=[["🍬 Sweet Treat! +6",6],["🍬 Sweet Treat! +6",6],["🎃 Golden Pumpkin! +10",10],["🦇 Bat Blessing +4",4],["🦇 Bat Blessing +4",4],["🕷️ TRICK: Cackle like a witch for 5 seconds! +7",7],["🧟 TRICK: Zombie-walk to the snack table and back! +7",7],["👻 TRICK: Say ‘Boo!’ to 3 people! +6",6],["💀 TRICK: Tell the room your scariest fear +5",5],["⚰️ CURSE! The coffin takes 3 points −3",-3],["⚰️ CURSE! −3",-3],["🔮 STEAL! Take 3 points from the adult leader",3,"steal"],["🪄 Double Spell! +12",12]];
-const POTIONS=[["🧪 Green Slime +8",8],["🧪 Purple Mist +5",5],["🧪 Orange Fizz +6",6],["🧪 Black Goo −2 (and cackle!)",-2],["🧪 Red Blood: STEAL 3 from the leader",3,"steal"],["🧪 Glow Juice +10",10]];
+const BANK={
+realfake:[
+{q:'Jack-o’-lanterns were first carved from turnips, not pumpkins.',o:['REAL ✅','FAKE 🤥'],a:0,n:'Real! The Irish carved turnips first.'},
+{q:'In Victorian England, owning a black cat on Halloween night was illegal.',o:['REAL ✅','FAKE 🤥'],a:1,n:'Fake. Poor cats.'},
+{q:'Candy corn was once marketed as “chicken feed.”',o:['REAL ✅','FAKE 🤥'],a:0,n:'Real! Early boxes really used that name.'},
+{q:'A pumpkin is technically a fruit.',o:['REAL ✅','FAKE 🤥'],a:0,n:'Real! It grows from a flower and holds seeds.'},
+{q:'Ghosts must be see-through by law in 12 U.S. states.',o:['REAL ✅','FAKE 🤥'],a:1,n:'Fake. Ghost fashion is unregulated.'},
+{q:'Harry Houdini died on Halloween.',o:['REAL ✅','FAKE 🤥'],a:0,n:'Real! October 31, 1926.'},
+{q:'The average American eats 14 pounds of candy corn every Halloween.',o:['REAL ✅','FAKE 🤥'],a:1,n:'Fake. That would be a LOT of candy corn.'},
+{q:'Bats are the only mammals that can truly fly.',o:['REAL ✅','FAKE 🤥'],a:0,n:'Real! Flying squirrels just glide.'},
+{q:'Vampires were banned from the first Halloween parade for biting the judges.',o:['REAL ✅','FAKE 🤥'],a:1,n:'Fake. Judges are safe (mostly).'}],
+pop:[
+{q:'Who played the title role in the 1988 movie “Beetlejuice”?',o:['Michael Keaton','Jeff Goldblum','Danny DeVito','A very confused raccoon'],a:0},
+{q:'What is the disembodied hand in The Addams Family called?',o:['Handy Andy','Lefty','Thing','Jazz Hands'],a:2},
+{q:'In “It’s the Great Pumpkin, Charlie Brown,” who waits in the pumpkin patch?',o:['Snoopy','Lucy','Pumpkin Pete','Linus'],a:3},
+{q:'Who created the monster in Mary Shelley’s “Frankenstein”?',o:['The monster himself','Victor Frankenstein','Igor','Dr. Phil'],a:1},
+{q:'Jack Skellington is the Pumpkin King of which town?',o:['Spookyville','Boo Burgh','Halloween Town','Creepsville, Ohio'],a:2},
+{q:'Dracula is famous for turning into which animal?',o:['A bat','A goldfish','A very large hamster','A squirrel'],a:0},
+{q:'What snack bribes Scooby-Doo into solving mysteries?',o:['Pizza rolls','Raw carrots','Gluten-free kale','Scooby Snacks'],a:3},
+{q:'In “Ghostbusters,” the giant villain is the Stay Puft what?',o:['Gingerbread Guy','Marshmallow Man','Cotton Candy Cow','Butter Biscuit'],a:1},
+{q:'In “Hocus Pocus,” what are the Sanderson sisters?',o:['Accountants','Mermaids','Witches','Substitute teachers'],a:2}],
+jokes:[
+{q:'Why did the skeleton go to the party alone?',o:['He had no body to go with','He forgot his invitation','He was bone-tired','He got ghosted'],a:0},
+{q:'What do you call a witch who lives at the beach?',o:['A sea-hag','Wavy Gravy','A sand-witch','Moana'],a:2},
+{q:'Why did the vampire read the Wall Street Journal?',o:['He loved stocks (and steaks)','It was free at the coffin shop','Bats can’t read','He heard it had great circulation'],a:3},
+{q:'What type of music do mummies listen to?',o:['Heavy metal','Wrap music','Tomb-bone country','Smooth jazz'],a:1},
+{q:'Why is the graveyard so noisy?',o:['The zombies play loud music','Skeletons tap dance','Because of all the coffin','It’s near an airport'],a:2},
+{q:'How do you fix a broken jack-o’-lantern?',o:['Duct tape','Call a gourd-ian','Tell it a joke','With a pumpkin patch'],a:3},
+{q:'What kind of streets do zombies like?',o:['Dead ends','Brain Boulevard','Zombie Lane','One-way streets'],a:0},
+{q:'What do you get when you cross a vampire and a snowman?',o:['Chilly Dracula','Frostbite','A cold-blooded snow day','Ice Count-ula'],a:1},
+{q:'What do ghosts eat for dinner?',o:['Boo-ritos','Ghost peppers','Spook-etti','Casper-roni'],a:2}]};
+const YEARS=[['the novel “Frankenstein” was first published',1818],['the novel “Dracula” was published',1897],['the original movie “Halloween” came out',1978],['the movie “Beetlejuice” came out',1988],['the original “Ghostbusters” came out',1984],['“Hocus Pocus” came out',1993],['“Scooby-Doo, Where Are You!” first aired',1969],['the song “Monster Mash” was released',1962],['the movie “Casper” came out',1995]];
+const BLUFF=[{q:'Early candy corn was sold with a barnyard nickname. What was it?',real:'Chicken Feed'},{q:'The fear of Halloween has an official name. What is it?',real:'Samhainophobia'},{q:'In Ireland, the first jack-o’-lanterns were carved from which vegetable?',real:'Turnips'}];
+const LIKELY=['hide in the bathroom to avoid trick-or-treaters','eat all the candy before the kids see it','scream first in a haunted house','wear the same costume five years in a row','fall asleep before 9pm on Halloween','turn into a zombie before their morning coffee','cry during a Halloween movie','dress up the family pet','start a dance-off at the party'];
+const PAL=['#ff8a1f','#7CFC5A','#8a5cff','#ff4d6d','#ffe14d','#4dc3ff','#222222','#ffffff'];
+const HATS=['🎩','👑','🧢','🎃','🪄','🎀'],EYES=['👀','👁️','👁️👁️👁️','🕶️','🥽','😳'],MOUTH=['👄','🦷','👅','😬','🫦','🦈'],BODY=['#2fa84f','#e07a10','#7a4de0','#e0405d','#2e9ad6','#d8bd2e'];
+const TREAT=['🍫','🍬','🍭','🍪','🍩','🧁'],TRICK=['🕷️','🪱','🦴','💀','🧦','🐍'];
 const TWISTS=["🤐 No talking — act it out","🙈 Eyes closed","🐸 Hop on one foot","🤫 Whisper only","🙌 Hands behind your back","🧟 Zombie voice only","🔄 Opposite hand only","🎵 Hum or sing your clues"];
 const WORDS=["🧟 Zombie","🧙 Witch on a broom","🎃 Carving a pumpkin","🦇 Bat","👻 Ghost","🕷️ Spider","🧛 Vampire","🍬 Trick-or-treating","🪦 Rising from a grave","🐺 Werewolf","🧹 Sweeping with a broom","🕸️ Spider web"];
 const SYM=['🎃','🦇','👻','🕷️'];
 // ---------- STATE ----------
-let db=null,S=null,P=[],R={},RD={},SC={g:{},f:{}},me=localStorage.getItem('hh_me')||null,step=null,picks={},pad={},sim={},wd={},pws={},hostUntil=0,dirty=false,err='',sent=new Set();
+let db=null,S=null,P=[],R={},RD={},AC={},tq={},lk={},G={},ovT=[],SC={g:{},f:{}},me=localStorage.getItem('hh_me')||null,step=null,picks={},pad={},sim={},wd={},pws={},hostUntil=0,dirty=false,err='',sent=new Set();
 const $=s=>document.querySelector(s);
 const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const by=id=>P.find(p=>p.id===id);
@@ -100,16 +135,17 @@ const upd=o=>DB.doc('game/state').update(o);
 const tstat=t=>{const tk=S['tk'+t]||{st:'idle'};return tk.st==='live'&&RD[`${t}_${tk.gi}_${tk.rd}`]==='done'?'scored':tk.st};
 const fstat=()=>S.fst==='live'&&RD[`f_${S.fi}_1`]==='done'?'scored':S.fst;
 // ---------- SCORING (derived, so it can never double-count) ----------
+function rankOut(arr,out){let last=null,ri=0;arr.forEach((x,i)=>{if(x.v!==last){ri=i;last=x.v}out[x.id]=T[ri]||1})}
 function roundPts(key,gid,mem){
   const out={};if(RD[key]!=='done'||!GM[gid])return out;
-  const g=GM[gid],ent=R[key]||{};
-  if(['react','mem','act'].includes(g.type)){
-    let a=mem.filter(p=>ent[p.id]).map(p=>({id:p.id,v:ent[p.id].v}));
-    if(g.type==='react')a=a.filter(x=>x.v<9999).sort((x,y)=>x.v-y.v);
-    else if(g.type==='mem')a=a.filter(x=>x.v>0).sort((x,y)=>y.v-x.v);
-    else a.sort((x,y)=>x.v-y.v);
-    let last=null,ri=0;a.forEach((x,i)=>{if(x.v!==last){ri=i;last=x.v}out[x.id]=T[ri]||1});
-  }else mem.forEach(p=>{if(ent[p.id])out[p.id]=ent[p.id].v});
+  const g=GM[gid],ent=R[key]||{},vt=R[key+'v']||{};
+  if(g.type==='low')rankOut(mem.filter(p=>ent[p.id]&&ent[p.id].v<9000).map(p=>({id:p.id,v:ent[p.id].v})).sort((a,b)=>a.v-b.v),out);
+  else if(g.type==='high')rankOut(mem.filter(p=>ent[p.id]&&ent[p.id].v>0).map(p=>({id:p.id,v:ent[p.id].v})).sort((a,b)=>b.v-a.v),out);
+  else if(g.type==='vote'){const c={};Object.values(vt).forEach(x=>c[x.v]=(c[x.v]||0)+1);rankOut(mem.filter(p=>ent[p.id]).map(p=>({id:p.id,v:c[p.id]||0})).sort((a,b)=>b.v-a.v),out)}
+  else if(g.type==='bluff')Object.values(vt).forEach(x=>{if(x.v==='REAL')out[x.pid]=(out[x.pid]||0)+8;else out[x.v]=(out[x.v]||0)+5});
+  else if(g.type==='likely'){const tal=[{},{},{}];Object.values(ent).forEach(x=>String(x.t||'').split(',').forEach((id,i)=>{if(id&&tal[i])tal[i][id]=(tal[i][id]||0)+1}));
+    tal.forEach(t=>{const m=Math.max(0,...Object.values(t));if(m>0)Object.keys(t).forEach(id=>{if(t[id]===m)out[id]=(out[id]||0)+6})})}
+  else mem.forEach(p=>{if(ent[p.id])out[p.id]=ent[p.id].v});
   return out;
 }
 function computeScores(){
@@ -133,8 +169,13 @@ function activeRounds(){const o=[];if(!S)return o;
   if(S.phase==='live')['k','a'].forEach(t=>{const tk=S['tk'+t];if(tk&&tk.st==='live'){const g=t==='k'?'kid':'adult';o.push({key:`${t}_${tk.gi}_${tk.rd}`,gid:(S['sel_'+g]||[])[tk.gi],mem:members(g)})}});
   if(S.phase==='final'&&S.fst==='live')o.push({key:`f_${S.fi}_1`,gid:fg()[S.fi],mem:P});
   return o}
-function autoDone(){activeRounds().forEach(r=>{const ty=GM[r.gid]&&GM[r.gid].type;if(!['react','mem','cards','gamble','potion'].includes(ty))return;
-  if(RD[r.key]==='live'&&r.mem.length&&r.mem.every(p=>(R[r.key]||{})[p.id])&&!sent.has(r.key)){sent.add(r.key);DB.doc('rds/'+r.key).set({st:'done'}).catch(()=>sent.delete(r.key))}})}
+function setRd(k,st){const id=k+'|'+st;if(sent.has(id))return;sent.add(id);DB.doc('rds/'+k).set({st}).catch(()=>sent.delete(id))}
+function autoDone(){activeRounds().forEach(r=>{const g=GM[r.gid];if(!g||g.mode==='desc')return;
+  const all=r.mem.length&&r.mem.every(p=>(R[r.key]||{})[p.id]);
+  if(TWO.includes(g.mode)){
+    if(RD[r.key]==='live'&&all)setRd(r.key,'vote');
+    if(RD[r.key]==='vote'&&r.mem.every(p=>(R[r.key+'v']||{})[p.id]))setRd(r.key,'done');
+  }else if(RD[r.key]==='live'&&all)setRd(r.key,'done')})}
 function refresh(){if(!db)return;autoDone();render()}
 async function init(){
   try{await pull()}catch(e){$('#app').innerHTML='<div class="card"><h2>👻 Can’t reach the database</h2><p class="mut">Check the Firebase URL in the file and that the database rules allow read and write. ('+E(e.message)+')</p></div>';return}
@@ -142,6 +183,7 @@ async function init(){
   db.doc('game/state').onSnapshot(s=>{S=s.exists?s.data():null;refresh()});
   db.collection('players').onSnapshot(q=>{P=q.docs.map(d=>({id:d.id,...d.data()}));refresh()});
   db.collection('res').onSnapshot(q=>{R={};q.docs.forEach(d=>{const x=d.data();(R[x.key]=R[x.key]||{})[x.pid]=x});refresh()});
+  db.collection('acc').onSnapshot(q=>{AC={};q.docs.forEach(d=>{const x=d.data();(AC[x.gk]=AC[x.gk]||{})[x.pid]=1});refresh()});
   db.collection('rds').onSnapshot(q=>{RD={};q.docs.forEach(d=>RD[d.id]=d.data().st);refresh()});
   let t=null;const kick=()=>{clearTimeout(t);t=setTimeout(()=>pull().catch(()=>{}),120)};
   try{const es=new EventSource(BASE+'/.json');es.addEventListener('put',kick);es.addEventListener('patch',kick)}catch(e){}
@@ -248,7 +290,7 @@ function playUI(){
     else if(x.st==='done'||x.st==='cancel')h+=`<p>${x.st==='done'?'Your group’s games are finished! 🎉':'Your group’s games were cancelled.'}</p><p class="pts">${gpts(p)} points</p>`;
     else{
       h+=`<div class="mut">Game ${x.tk.gi+1} of 3 · Round ${x.tk.rd} of 3</div>`+gameCard(x.gid);
-      if(x.st==='intro')h+='<p class="mut">The host will start the round when everyone is ready…</p>';
+      if(x.st==='intro')h+=accUI(p,`${t}_${x.tk.gi}`);
       else if(x.st==='scored'){const o=roundPts(x.key,x.gid,members(x.g));h+=`<div class="gc">Round result: <b>${o[p.id]!=null?(o[p.id]>=0?'+':'')+o[p.id]+' pts':'no score'}</b></div>`}
       else h+=play(p,GM[x.gid],x.key);
     }
@@ -256,23 +298,52 @@ function playUI(){
   });
   return h;
 }
+const accN=(gk,mem)=>mem.filter(p=>(AC[gk]||{})[p.id]).length;
+function accUI(p,gk){const mem=gk[0]==='f'?P:members(p.group);return (AC[gk]||{})[p.id]?`<div class="gc">✅ You accepted the rules.<br><span class="mut">Waiting for everyone else… (${accN(gk,mem)}/${mem.length})</span></div>`:`<button class="big" onclick="accept('${p.id}','${gk}')">✅ I get it — I accept the rules</button>`}
+async function accept(pid,gk){await DB.doc('acc/'+gk+'__'+pid).set({gk,pid})}
 function play(p,g,key){
+  const e=(R[key]||{})[p.id],m=g.mode;
+  if(m==='react')return padHtml(p,key);
+  if(m==='mem')return simHtml(p,key);
+  if(m==='mc')return mcHtml(p,key,g);
+  if(m==='likely')return likelyHtml(p,key);
+  if(m==='desc')return charHtml(p);
+  if(RD[key]==='vote')return voteUI(p,key,g);
+  if(e)return `<div class="gc">✅ Submitted${e.t&&m!=='bluff'&&m!=='color'&&m!=='monster'?': '+E(e.t):''}<br><span class="mut">Waiting for everyone else…</span></div>`;
+  return `<button class="big" onclick="launch('${p.id}','${key}','${g.id}')">▶ Play now!</button>`;
+}
+const hs=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))>>>0;return h};
+const rdOf=key=>+key.split('_')[2];
+function artHtml(mode,d){return mode==='color'?artSvg(d.split(',').map(Number),false):monsterHtml(d)}
+function voteUI(p,key,g){
+  if((R[key+'v']||{})[p.id])return '<div class="gc">✅ Vote sent! Waiting for the others…</div>';
+  const ent=R[key]||{},cr=members(p.group).filter(x=>ent[x.id]).sort((a,b)=>hs(a.id+key)-hs(b.id+key));
+  if(g.mode==='bluff'){const q=BLUFF[rdOf(key)-1],o=[{id:'REAL',t:q.real},...cr.filter(x=>x.id!==p.id).map(x=>({id:x.id,t:ent[x.id].t}))].sort((a,b)=>hs(a.id+key)-hs(b.id+key));
+    return `<div class="gc"><b>${E(q.q)}</b></div><div class="mut">Which answer is REAL?</div>`+o.map(x=>`<button class="opt" onclick="castVote('${p.id}','${key}','${x.id}')">${E(x.t)}</button>`).join('')}
+  return '<div class="mut">Vote for your favorite! (not your own)</div>'+cr.map((x,i)=>x.id===p.id?`<div class="gc"><b>#${i+1}</b> (yours)</div>`:`<div class="gc"><b>#${i+1}</b>${artHtml(g.mode,ent[x.id].t)}<button class="big" onclick="castVote('${p.id}','${key}','${x.id}')">⭐ Vote for #${i+1}</button></div>`).join('');
+}
+const castVote=(pid,key,target)=>put(key+'v',pid,target);
+function mcHtml(p,key,g){
   const e=(R[key]||{})[p.id];
-  if(g.type==='act'){const r=Object.values(R[key]||{}).sort((a,b)=>a.v-b.v).findIndex(z=>z.pid===p.id);return `<div class="pad">👀 Do the activity!<br>The judge will rank everyone.${e?'<br>You’re ranked #'+(r+1):''}</div>`}
-  if(g.type==='react')return padHtml(p,key);
-  if(g.type==='mem')return simHtml(p,key);
-  if(e)return `<div class="gc">${E(e.t)}</div>`;
-  if(g.type==='gamble')return `<button class="big alt" onclick="gamble('${p.id}','${key}',0)">🛡️ Play safe: +4</button><button class="big" onclick="gamble('${p.id}','${key}',1)">💀 Go risky: 50% +12 / 50% −4</button>`;
-  return `<div class="cards">${[0,1,2].map(()=>`<button onclick="draw('${p.id}','${key}','${g.type}')">${g.type==='potion'?'🧪':'🂠'}</button>`).join('')}</div><div class="mut">Pick one…</div>`;
+  if(e)return `<div class="gc">✅ ${E(e.t)}<br><span class="mut">Waiting for everyone else…</span></div>`;
+  const qs=BANK[g.id].slice((rdOf(key)-1)*3,(rdOf(key)-1)*3+3),k=p.id+key,st=tq[k];
+  if(!st)return `<button class="big" onclick="tqStart('${p.id}','${key}')">Ready? Show the first question ▶</button>`;
+  const q=qs[st.i];let h=`<div class="mut">Question ${st.i+1} of 3</div><div class="gc"><b>${E(q.q)}</b></div>`;
+  q.o.forEach((o,i)=>{const c=st.pick==null?'':i===q.a?'ok':i===st.pick?'bad':'';h+=`<button class="opt ${c}" ${st.pick==null?`onclick="tqPick('${p.id}','${key}',${i})"`:'disabled'}>${E(o)}</button>`});
+  if(st.pick!=null)h+=(q.n?`<div class="mut">${E(q.n)}</div>`:'')+`<button class="big" onclick="tqNext('${p.id}','${key}')">${st.i<2?'Next question ▶':'Finish ✅'}</button>`;
+  return h;
 }
+function tqStart(pid,key){tq[pid+key]={i:0,score:0,right:0,t0:Date.now(),pick:null};render()}
+function tqPick(pid,key,i){const st=tq[pid+key],g=GM[(key[0]==='f'?fg():S['sel_'+(key[0]==='k'?'kid':'adult')])[+key.split('_')[1]]],q=BANK[g.id][(rdOf(key)-1)*3+st.i];
+  st.pick=i;if(i===q.a){st.right++;st.score+=100+Math.max(0,Math.round((10000-(Date.now()-st.t0))/1000))}render()}
+async function tqNext(pid,key){const k=pid+key,st=tq[k];if(st.i<2){st.i++;st.pick=null;st.t0=Date.now();render()}else{delete tq[k];await put(key,pid,st.score,st.right+'/3 correct')}}
+function likelyHtml(p,key){
+  if((R[key]||{})[p.id])return '<div class="gc">✅ Votes locked in. Waiting for everyone else…</div>';
+  const k=p.id+key,st=lk[k]||(lk[k]={i:0,v:[]});
+  return `<div class="mut">Prompt ${st.i+1} of 3</div><div class="gc"><b>Who is most likely to… ${E(LIKELY[(rdOf(key)-1)*3+st.i])}?</b></div><div class="gap">`+members(p.group).filter(x=>x.id!==p.id).map(x=>`<button onclick="lkPick('${p.id}','${key}','${x.id}')">${E(x.name)}</button>`).join('')+'</div>';
+}
+async function lkPick(pid,key,t){const k=pid+key,st=lk[k];st.v.push(t);if(st.i<2){st.i++;render()}else{delete lk[k];await put(key,pid,1,st.v.join(','))}}
 const put=(key,pid,v,t)=>DB.doc('res/'+key+'__'+pid).set({key,pid,v,t:t||''});
-async function draw(pid,key,kind){
-  if((R[key]||{})[pid])return;
-  const pool=kind==='potion'?POTIONS:CARDS,c=pool[Math.floor(Math.random()*pool.length)];let txt=c[0],pts=c[1];
-  if(c[2]==='steal'){const o=members('adult').filter(x=>x.id!==pid).sort((a,b)=>gpts(b)-gpts(a))[0];if(o&&gpts(o)>0){txt+=` — stole from ${o.name}!`;await DB.doc('players/'+o.id).update({adj:num(o.adj)-3})}else txt+=' (nobody to rob)'}
-  await put(key,pid,pts,txt);
-}
-async function gamble(pid,key,risky){if((R[key]||{})[pid])return;if(!risky)return put(key,pid,4,'🛡️ Played safe +4');const w=Math.random()<.5;await put(key,pid,w?12:-4,w?'💀 Risky… and it paid off! +12':'💀 Risky… the grave got you! −4')}
 function padHtml(p,key){
   const e=(R[key]||{})[p.id],st=pad[p.id+key];
   if(e)return `<div class="pad">${e.v>=9999?'👻 False start!':'⚡ '+e.v+' ms'}</div>`;
@@ -313,7 +384,7 @@ function finalUI(){
   const ms=mine(),gid=fg()[S.fi],st=fstat(),key=`f_${S.fi}_1`;let h=`<div class="card"><h2>${E(GM[gid]?GM[gid].name:'')} <span class="mut">Game ${S.fi+1} of ${fg().length}</span></h2>${gameCard(gid)}`;
   if(!ms.length)return h+'</div>'+existing();
   ms.forEach(p=>{h+=`<div style="margin:10px 0"><b>${E(p.name)}</b><span class="tag">${p.group==='kid'?'Kids':'Adults'}</span>`+curseHtml(p);
-    if(st==='intro')h+='<p class="mut">Host will start the game…</p>';
+    if(st==='intro')h+=accUI(p,'f_'+S.fi);
     else if(st==='scored'){const o=roundPts(key,gid,P);h+=`<div class="gc">Result: <b>${o[p.id]!=null?'+'+o[p.id]+' pts':'no score'}</b></div>`}
     else if(st==='live')h+=GM[gid].type==='react'?padHtml(p,key):GM[gid].type==='mem'?simHtml(p,key):charHtml(p);
     if(st==='intro'||st==='live')h+=powerHtml(p);
@@ -364,10 +435,10 @@ function hostPanel(){
 function liveHost(){
   let h='<h2>Games in progress</h2>';
   ['k','a'].forEach(t=>{const x=trackGame(t),gm=GM[x.gid],n=(R[x.key]||{});
-    h+=`<div class="gc"><b>${GI[x.g]} ${GL[x.g]}</b> — ${E(gm?gm.name:'')} · Game ${x.tk.gi+1}/3 · Round ${x.tk.rd}/3<br><span class="mut">${stText(x.st)}${x.st==='live'?` · ${Object.keys(n).length}/${members(x.g).length} played`:''}</span>`;
+    h+=`<div class="gc"><b>${GI[x.g]} ${GL[x.g]}</b> — ${E(gm?gm.name:'')} · Game ${x.tk.gi+1}/3 · Round ${x.tk.rd}/3<br><span class="mut">${x.st==='live'&&RD[x.key]==='vote'?'Voting 🗳️':stText(x.st)}${x.st==='live'?` · ${Object.keys(n).length}/${members(x.g).length} played`:''}</span>`;
     if(x.st==='idle')h+=`<button class="big" onclick="startTrack('${t}')">▶ Start ${GL[x.g].toLowerCase()} games</button>`;
-    if(x.st==='intro')h+=`<button class="big" onclick="startRound('${t}')">▶ Start round 1</button>`;
-    if(x.st==='live'){if(gm.type==='act')h+=placeUI(x.key,x.g);h+=`<button class="big alt" onclick="endRound('${x.key}')">⏹ End round & score</button>`}
+    if(x.st==='intro'){const gk=`${t}_${x.tk.gi}`,m=members(x.g),a=accN(gk,m);h+=`<div class="mut">${a}/${m.length} accepted the rules</div><button class="big" ${a>=m.length?'':'disabled'} onclick="startRound('${t}')">▶ Start round 1</button>`+(a<m.length?`<button class="sm alt" onclick="startRound('${t}')">Start anyway</button>`:'')}
+    if(x.st==='live'){if(TWO.includes(gm.mode)&&RD[x.key]==='live'&&Object.keys(n).length)h+=`<button class="big alt" onclick="startVote('${x.key}')">🗳️ Start voting now</button>`;h+=`<button class="big alt" onclick="endRound('${x.key}')">⏹ End round & score</button>`}
     if(x.st==='scored')h+=`<button class="big" onclick="nextRound('${t}')">${x.tk.rd<3?'Next round ▶':x.tk.gi<2?'Next game ▶':'Finish ✅'}</button>`;
     if(['intro','live','scored'].includes(x.st))h+=`<button class="sm alt" onclick="skipGame('${t}')">⏭ Skip this game</button> <button class="sm red" onclick="cancelTrack('${t}')">✕ Cancel ${GL[x.g].toLowerCase()} games</button>`;
     h+='</div>'});
@@ -375,9 +446,7 @@ function liveHost(){
   h+=`<button class="big ${fin?'':'alt'}" onclick="startFinal(${fin})">💀 Start the FINAL${fin?'':' (groups not finished)'}</button>`;
   return h;
 }
-function placeUI(key,g){const e=R[key]||{},ord=Object.values(e).sort((a,b)=>a.v-b.v).map(x=>x.pid);
-  return `<div class="mut" style="margin-top:6px">Tap players in finishing order (best first). Tap again to remove.</div><div class="gap">`+members(g).map(p=>{const i=ord.indexOf(p.id);return `<button class="sm ${i>=0?'':'alt'}" onclick="place('${key}','${p.id}')">${i>=0?'#'+(i+1)+' ':''}${E(p.name)}</button>`}).join('')+'</div>'}
-async function place(key,pid){if(!guard())return;const e=R[key]||{};if(e[pid])await DB.doc('res/'+key+'__'+pid).delete();else await put(key,pid,Math.max(0,...Object.values(e).map(x=>x.v))+1,'')}
+async function startVote(key){if(!guard())return;await DB.doc('rds/'+key).set({st:'vote'})}
 async function startTrack(t){if(!guard())return;await upd({['tk'+t]:{st:'intro',gi:0,rd:1}})}
 async function startRound(t){if(!guard())return;const tk=S['tk'+t];await DB.doc('rds/'+`${t}_${tk.gi}_${tk.rd}`).set({st:'live'});await upd({['tk'+t]:{...tk,st:'live'}})}
 async function endRound(key){if(!guard())return;await DB.doc('rds/'+key).set({st:'done'})}
@@ -396,7 +465,7 @@ async function startFinal(fin){if(!guard())return;if(!fin&&!confirm('A group is 
 function finalHost(){
   const gid=fg()[S.fi],gm=GM[gid],st=fstat(),key=`f_${S.fi}_1`,last=S.fi>=fg().length-1;
   let h=`<h2>Final: ${E(gm.name)} (${S.fi+1}/${fg().length})</h2><div class="mut">${stText(st)}${st==='live'?` · ${Object.keys(R[key]||{}).length} results in`:''}</div>`;
-  if(st==='intro')h+=`<p class="mut">Power holders can cast curses now.</p><button class="big" onclick="startFinalRound()">▶ Start this game</button>`;
+  if(st==='intro'){const gk='f_'+S.fi,a=accN(gk,P);h+=`<p class="mut">${a}/${P.length} accepted the rules. Power holders can cast curses now.</p><button class="big" ${a>=P.length?'':'disabled'} onclick="startFinalRound()">▶ Start this game</button>`+(a<P.length?`<button class="sm alt" onclick="startFinalRound()">Start anyway</button>`:'')}
   if(st==='live'){
     if(gm.type==='desc'){
       h+=`<div class="mut">Pick who acts next:</div><div class="gap">${P.map(p=>`<button class="sm ${S.perf===p.id?'':'alt'}" onclick="setPerf('${p.id}')">${E(p.name)}</button>`).join('')}</div>`;
@@ -419,6 +488,53 @@ async function resetAll(){if(!guard()||!confirm('Wipe EVERYTHING and start over?
   for(const p of P)await DB.doc('players/'+p.id).delete();
   for(const k in cache.res||{})await DB.doc('res/'+k).delete();
   for(const k in cache.rds||{})await DB.doc('rds/'+k).delete();
+  for(const k in cache.acc||{})await DB.doc('acc/'+k).delete();
   await DB.doc('game/state').delete();localStorage.removeItem('hh_me');me=null;hostUntil=0;sent.clear();picks={}}
+// ---------- OVERLAY MINI-GAMES ----------
+function openOv(html){const o=$('#ov');o.className='ov';o.style.display='block';o.innerHTML=html;o.scrollTop=0}
+function closeOv(){ovT.forEach(t=>{clearInterval(t);clearTimeout(t)});ovT=[];const o=$('#ov');o.style.display='none';o.innerHTML='';G={}}
+const tm=t=>{ovT.push(t);return t};
+async function ovFinish(v,t){const pid=G.pid,key=G.key;closeOv();await put(key,pid,v,t)}
+function launch(pid,key,gid){G={pid,key,gid};({whack:whackStart,sort:sortStart,hunt:huntStart,match:matchStart,color:colorStart,monster:monsterStart,bluff:bluffStart,year:yearStart})[GM[gid].mode]()}
+const ovHead=(t,x)=>`<div class="ovh"><b>${t}</b><span>${x||''}</span></div>`;
+function whackStart(){G.sc=0;G.left=20;G.cur=-1;
+  openOv(ovHead('👻 Whack-a-Ghost','⏱ <b id="wt">20</b> · Score <b id="ws">0</b>')+`<div class="g3">${[0,1,2,3,4,5,6,7,8].map(i=>`<button class="hole" id="h${i}" onclick="whHit(${i})"></button>`).join('')}</div><p class="mut">Tap 👻 — avoid 🦇!</p>`);
+  tm(setInterval(()=>{G.left--;$('#wt').textContent=G.left;if(G.left<=0)ovFinish(G.sc,'👻 '+G.sc+' points')},1000));
+  tm(setInterval(()=>{if(G.cur>=0)$('#h'+G.cur).textContent='';G.cur=Math.floor(Math.random()*9);G.bat=Math.random()<.3;$('#h'+G.cur).textContent=G.bat?'🦇':'👻'},750))}
+function whHit(i){if(i!==G.cur)return;G.sc=Math.max(0,G.sc+(G.bat?-1:1));$('#ws').textContent=G.sc;$('#h'+i).textContent='💥';G.cur=-1}
+function sortStart(){G.sc=0;G.left=30;openOv(ovHead('🍬 Treat or Trick','⏱ <b id="wt">30</b> · Score <b id="ws">0</b>')+`<div class="pad" style="font-size:5rem" id="si"></div><div class="gap" style="margin-top:12px"><button class="big" style="flex:1" onclick="sortAns(1)">🍬 TREAT</button><button class="big red" style="flex:1" onclick="sortAns(0)">🕷️ TRICK</button></div>`);sortNext();
+  tm(setInterval(()=>{G.left--;$('#wt').textContent=G.left;if(G.left<=0)ovFinish(G.sc,'🍬 '+G.sc+' points')},1000))}
+function sortNext(){G.treat=Math.random()<.5;const a=G.treat?TREAT:TRICK;$('#si').textContent=a[Math.floor(Math.random()*a.length)]}
+function sortAns(t){G.sc=Math.max(0,G.sc+((t===1)===G.treat?1:-1));$('#ws').textContent=G.sc;sortNext()}
+const PAIRS=[['🎃','🍊'],['🕷️','🐜'],['👻','☁️']];
+function huntStart(){G.i=0;G.pen=0;G.t0=Date.now();openOv(ovHead('🔎 Find the Odd One','<span id="hn">1 of 3</span>')+'<div class="g7" id="hg"></div><p class="mut">Tap the one that’s different! Wrong taps cost 1 second.</p>');huntScene()}
+function huntScene(){const [a,b]=PAIRS[G.i];G.odd=Math.floor(Math.random()*56);$('#hn').textContent=(G.i+1)+' of 3';$('#hg').innerHTML=[...Array(56)].map((_,i)=>`<button onclick="huntTap(${i})">${i===G.odd?b:a}</button>`).join('')}
+function huntTap(i){if(i!==G.odd){G.pen+=1000;const o=$('#ov');o.style.background='#3a1020';tm(setTimeout(()=>{o.style.background=''},150));return}
+  if(G.i<2){G.i++;huntScene()}else{const ms=Date.now()-G.t0+G.pen;ovFinish(ms,'⏱ '+(ms/1000).toFixed(1)+' s')}}
+function matchStart(){const sy=['🎃','👻','🦇','🕷️','💀','🍬'];G.d=[...sy,...sy].sort(()=>Math.random()-.5);G.open=[];G.done=0;G.moves=0;G.t0=Date.now();G.lock=false;
+  openOv(ovHead('🃏 Memory Match','Moves <b id="mm">0</b>')+`<div class="g4">${G.d.map((_,i)=>`<button class="card2" id="c${i}" onclick="mtap(${i})">❓</button>`).join('')}</div>`)}
+function mtap(i){const el=$('#c'+i);if(G.lock||G.open.includes(i)||el.dataset.m)return;el.textContent=G.d[i];G.open.push(i);
+  if(G.open.length<2)return;G.moves++;$('#mm').textContent=G.moves;const [a,b]=G.open;
+  if(G.d[a]===G.d[b]){[a,b].forEach(x=>{$('#c'+x).dataset.m=1;$('#c'+x).style.background='#7CFC5A'});G.open=[];G.done++;
+    if(G.done===6){const sec=Math.round((Date.now()-G.t0)/1000);ovFinish(G.moves*100+Math.min(sec,99),'🃏 '+G.moves+' moves, '+sec+' s')}}
+  else{G.lock=true;tm(setTimeout(()=>{$('#c'+a).textContent='❓';$('#c'+b).textContent='❓';G.open=[];G.lock=false},700))}}
+function artSvg(cols,click){
+  const f=i=>cols[i]>=0?PAL[cols[i]]:'#cfc6e0',c=i=>(click?`onclick="selReg(${i})" `:'')+(click&&G.sel===i?'stroke="#fff" stroke-width="3" ':'');
+  return `<svg viewBox="0 0 200 140" style="width:100%;border-radius:12px;display:block"><rect ${c(0)}x="0" y="0" width="200" height="140" fill="${f(0)}"/><circle ${c(1)}cx="160" cy="28" r="16" fill="${f(1)}"/><path ${c(2)}d="M0 112 Q50 82 100 106 T200 100 V140 H0Z" fill="${f(2)}"/><rect ${c(3)}x="62" y="62" width="50" height="46" fill="${f(3)}"/><polygon ${c(4)}points="56,64 87,38 118,64" fill="${f(4)}"/><rect ${c(5)}x="80" y="84" width="14" height="24" fill="${f(5)}"/><circle ${c(6)}cx="152" cy="114" r="17" fill="${f(6)}"/><path ${c(7)}d="M16 106 Q16 66 36 66 Q56 66 56 106 L49 99 L42 106 L36 99 L29 106 L23 99Z" fill="${f(7)}"/></svg>`}
+function colorStart(){G.cols=Array(8).fill(-1);G.sel=0;openOv(ovHead('🎨 Color the scene','')+`<div id="art"></div><p class="mut">Tap a part of the picture, then tap a color.</p><div class="gap">${PAL.map((c,i)=>`<button class="sw" style="background:${c}" onclick="setCol(${i})"></button>`).join('')}</div><button class="big" onclick="ovFinish(1,G.cols.join(','))">Done ✅</button>`);$('#art').innerHTML=artSvg(G.cols,true)}
+function selReg(i){G.sel=i;$('#art').innerHTML=artSvg(G.cols,true)}
+function setCol(c){G.cols[G.sel]=c;$('#art').innerHTML=artSvg(G.cols,true)}
+const monsterHtml=d=>{const [c,e,m,h]=d.split(',').map(Number);return `<div style="background:${BODY[c]};border-radius:18px;padding:12px;text-align:center;font-size:2.4rem;line-height:1.25">${HATS[h]}<br>${EYES[e]}<br>${MOUTH[m]}</div>`};
+function monsterStart(){G.m=[0,0,0,0];openOv(ovHead('👹 Build your monster','')+`<div id="mp"></div><button class="big" onclick="ovFinish(1,G.m.join(','))">Done ✅</button>`);monsterPanel()}
+function monsterPanel(){const row=(r,l,a)=>`<div class="mut" style="margin-top:8px">${l}</div><div class="gap">${a.map((x,i)=>`<button class="${G.m[r]===i?'':'alt'}" style="${r===0?`background:${x};min-width:44px;color:#fff`:'font-size:1.6rem'}" onclick="mSet(${r},${i})">${r===0?(G.m[r]===i?'✓':'&nbsp;'):x}</button>`).join('')}</div>`;
+  $('#mp').innerHTML=monsterHtml(G.m.join(','))+row(0,'Body',BODY)+row(1,'Eyes',EYES)+row(2,'Mouth',MOUTH)+row(3,'Hat',HATS)}
+function mSet(r,i){G.m[r]=i;monsterPanel()}
+function bluffStart(){G.q=BLUFF[rdOf(G.key)-1];G.txt='';openOv(ovHead('🎭 Fake It Till You Make It','')+`<div class="gc"><b>${E(G.q.q)}</b></div><p class="mut">Write a believable FAKE answer (keep it short). Everyone votes on which answer is real.</p><input id="bt" maxlength="40" placeholder="Your fake answer" oninput="G.txt=this.value"><button class="big" onclick="bluffDone()">Submit fake answer ✅</button>`)}
+function bluffDone(){const t=(G.txt||'').trim();if(!t){alert('Type a fake answer first');return}if(t.toLowerCase()===G.q.real.toLowerCase()){alert('That’s the real answer! Make up a fake one 😉');return}ovFinish(1,t)}
+function yearStart(){G.i=0;G.err=0;G.base=(rdOf(G.key)-1)*3;yearShow()}
+function yearShow(){const y=YEARS[G.base+G.i];openOv(ovHead('📅 Name That Year','Question '+(G.i+1)+' of 3')+`<div class="gc"><b>In what year ${E(y[0])}?</b></div><input id="yg" inputmode="numeric" maxlength="4" placeholder="e.g. 1985"><button class="big" onclick="yearGo()">Lock it in 🔒</button>`)}
+function yearGo(){const v=parseInt($('#yg').value,10);if(!(v>0)){alert('Type a year');return}const y=YEARS[G.base+G.i],d=Math.abs(v-y[1]);G.err+=d;
+  openOv(ovHead('📅 Name That Year','')+`<div class="gc">You guessed <b>${v}</b>.<br>Actual: <b>${y[1]}</b> — off by <b>${d}</b> years.</div><button class="big" onclick="yearNext()">${G.i<2?'Next ▶':'Finish ✅'}</button>`)}
+function yearNext(){if(G.i<2){G.i++;yearShow()}else ovFinish(G.err,'Total miss: '+G.err+' years')}
 init();
 </script></body></html>
